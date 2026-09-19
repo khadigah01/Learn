@@ -51,6 +51,17 @@ export const Home: React.FC = () => {
 
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+            <a
+              href="https://learn-academy-platform.surge.sh"
+              target="_blank"
+              rel="noreferrer"
+              className="px-8 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-base shadow-xl flex items-center gap-2 transition-all glow-btn"
+            >
+              <Sparkles className="w-5 h-5 text-slate-950" />
+              <span>learn-academy-platform.surge.sh</span>
+              <ExternalLink className="w-5 h-5" />
+            </a>
+
             <button
               onClick={() => navigate('/ads')}
               className="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-base shadow-xl flex items-center gap-2 transition-all glow-btn"
@@ -219,13 +230,23 @@ export const Home: React.FC = () => {
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a
-                href="https://korasty-kids.surge.sh/"
+                href="https://learn-academy-platform.surge.sh"
                 target="_blank"
                 rel="noreferrer"
                 className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-xl flex items-center gap-2 transition-all glow-btn"
               >
-                <span>https://korasty-kids.surge.sh</span>
+                <span>learn-academy-platform.surge.sh</span>
                 <ExternalLink className="w-4 h-4" />
+              </a>
+
+              <a
+                href="https://korasty-kids.surge.sh/"
+                target="_blank"
+                rel="noreferrer"
+                className="px-5 py-3 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs border border-white/30 flex items-center gap-1.5 transition-all glow-btn"
+              >
+                <span>https://korasty-kids.surge.sh</span>
+                <ExternalLink className="w-3.5 h-3.5" />
               </a>
 
               <a

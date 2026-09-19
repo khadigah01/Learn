@@ -110,9 +110,14 @@ export const Ads: React.FC = () => {
               <span className="text-sm font-extrabold tracking-wide text-amber-300 block">
                 Learn Academy
               </span>
-              <span className="text-[10px] text-indigo-200 font-semibold block">
-                Official Registration Portal
-              </span>
+              <a
+                href="https://learn-academy-platform.surge.sh"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[10px] text-indigo-200 hover:text-amber-300 font-semibold underline block"
+              >
+                learn-academy-platform.surge.sh
+              </a>
             </div>
           </div>
 

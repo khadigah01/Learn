@@ -142,18 +142,32 @@ const AppContent: React.FC = () => {
             </div>
           </div>
 
-          {/* Partner Notice */}
-          <div className="flex items-center gap-2 text-xs text-slate-300 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>Partner Platform:</span>
-            <a
-              href="https://korasty-kids.surge.sh/"
-              target="_blank"
-              rel="noreferrer"
-              className="text-amber-300 font-bold hover:underline flex items-center gap-0.5"
-            >
-              korasty-kids.surge.sh <ExternalLink className="w-3 h-3" />
-            </a>
+          {/* Platform Domain & Partner Notice */}
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
+            <div className="flex items-center gap-1.5 text-amber-300 font-bold">
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>Official Platform:</span>
+              <a
+                href="https://learn-academy-platform.surge.sh"
+                target="_blank"
+                rel="noreferrer"
+                className="underline hover:text-amber-200 flex items-center gap-0.5"
+              >
+                learn-academy-platform.surge.sh <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <span className="text-slate-600">|</span>
+            <div className="flex items-center gap-1 text-emerald-300 font-semibold">
+              <span>Partner:</span>
+              <a
+                href="https://korasty-kids.surge.sh/"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:underline flex items-center gap-0.5"
+              >
+                Korasty Kids <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
 
           <div className="text-xs text-slate-400 text-center md:text-right">

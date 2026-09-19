@@ -152,16 +152,16 @@ export const Navbar: React.FC = () => {
             <span>{t.careers}</span>
           </button>
 
-          {/* Partner Surge Platform Link */}
+          {/* Official Surge Platform Link */}
           <a
-            href="https://korasty-kids.surge.sh/"
+            href="https://learn-academy-platform.surge.sh"
             target="_blank"
             rel="noreferrer"
-            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 hover:bg-amber-400 hover:text-slate-950 transition-all flex items-center gap-1 glow-btn"
-            title="Partner Platform: korasty-kids.surge.sh"
+            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition-all flex items-center gap-1 glow-btn shadow"
+            title="Official Surge Platform: learn-academy-platform.surge.sh"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>korasty-kids.surge.sh</span>
+            <span>learn-academy-platform.surge.sh</span>
             <ExternalLink className="w-3 h-3 ml-0.5 opacity-80" />
           </a>
         </nav>
@@ -394,13 +394,13 @@ export const Navbar: React.FC = () => {
             {/* Quick Action Buttons in Menu Footnote */}
             <div className="mt-6 pt-4 border-t border-slate-200 flex flex-wrap gap-3">
               <a
-                href="https://korasty-kids.surge.sh/"
+                href="https://learn-academy-platform.surge.sh"
                 target="_blank"
                 rel="noreferrer"
                 className="px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow flex items-center gap-1.5 cursor-pointer glow-btn"
               >
                 <Sparkles className="w-4 h-4 text-slate-950" />
-                <span>korasty-kids.surge.sh</span>
+                <span>learn-academy-platform.surge.sh</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
 
