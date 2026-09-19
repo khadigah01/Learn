@@ -13,6 +13,7 @@ import { Careers } from './pages/Careers';
 import { Notifications } from './pages/Notifications';
 import { PublicMeetingPage } from './pages/PublicMeeting';
 import { Ads } from './pages/Ads';
+import { CommunicationHub } from './pages/CommunicationHub';
 import { translations } from './utils/translations';
 import { GraduationCap, ExternalLink, Sparkles, LogIn } from 'lucide-react';
 
@@ -56,7 +57,19 @@ const AppContent: React.FC = () => {
       return <LoginRole role="admin" />;
     }
 
-    // 3. Public pages
+    // 3. Communication Hub Routes (/ask/* & /talk/*)
+    if (
+      path === '/ask/admin' ||
+      path === '/ask/teacher' ||
+      path === '/ask/student' ||
+      path === '/talk/admin' ||
+      path === '/talk/teacher' ||
+      path === '/talk/student'
+    ) {
+      return <CommunicationHub />;
+    }
+
+    // 4. Public pages
     if (path === '/ads' || path === '/register') {
       return <Ads />;
     }
@@ -67,7 +80,7 @@ const AppContent: React.FC = () => {
       return <Games />;
     }
 
-    // 4. Authenticated-only Routes (Dashboard, Notifications)
+    // 5. Authenticated-only Routes (Dashboard, Notifications)
     if (path === '/dashboard' || path === '/notifications') {
       if (!currentUser) {
         return (

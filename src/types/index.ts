@@ -112,3 +112,48 @@ export interface ToastMessage {
   message: string;
   messageAr?: string;
 }
+
+export type CommunicationChannel =
+  | 'ask_admin'
+  | 'ask_teacher'
+  | 'ask_student'
+  | 'talk_admin'
+  | 'talk_teacher'
+  | 'talk_student';
+
+export interface InquiryMessage {
+  id: string;
+  channel: CommunicationChannel;
+  senderId: string;
+  senderName: string;
+  senderRole: Role | 'parent' | 'guest';
+  senderPhone?: string;
+  recipientId?: string; // 'admin' | teacherId | studentId
+  recipientName?: string;
+  subject?: string;
+  content: string;
+  status: 'pending' | 'answered' | 'closed';
+  reply?: string;
+  repliedBy?: string;
+  repliedAt?: string;
+  createdAt: number;
+  timestamp: string;
+}
+
+export interface ProgramItem {
+  id: string;
+  titleEn: string;
+  titleAr: string;
+  subject: 'Math' | 'Arabic' | 'English';
+  stage: string;
+  stageAr: string;
+  ageRange: string;
+  schedule: string;
+  sessionsCount: string;
+  price: string;
+  descriptionEn: string;
+  descriptionAr: string;
+  featuresEn: string[];
+  featuresAr: string[];
+}
+

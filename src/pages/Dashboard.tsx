@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { translations } from '../utils/translations';
-import { SubjectType, LiveMeeting, StudentGroup, User, CareerApplication } from '../types';
+import { SubjectType, LiveMeeting, StudentGroup, User, CareerApplication, ProgramItem, InquiryMessage } from '../types';
 import {
   Calendar,
   Clock,
@@ -24,7 +24,13 @@ import {
   Briefcase,
   X,
   Lock,
-  UserCheck
+  UserCheck,
+  MessageSquare,
+  HelpCircle,
+  Send,
+  Check,
+  Layers,
+  FileText
 } from 'lucide-react';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -37,6 +43,8 @@ export const Dashboard: React.FC = () => {
     groups,
     users,
     careerApps,
+    programs,
+    inquiries,
     createMeeting,
     toggleMeetingLiveStatus,
     deleteMeeting,
@@ -49,10 +57,16 @@ export const Dashboard: React.FC = () => {
     deleteUser,
     updateCareerAppStatus,
     deleteCareerApp,
+    createProgram,
+    updateProgram,
+    deleteProgram,
+    replyToInquiry,
+    deleteInquiry,
     sendBroadcastNotification,
     setActiveTestSubject,
     setActiveMeetingRoom,
-    showToast
+    showToast,
+    navigate
   } = useApp();
 
   const t = translations[language];
@@ -62,14 +76,14 @@ export const Dashboard: React.FC = () => {
   const isCoordinator = currentUser?.role === 'coordinator';
   const isStudent = currentUser?.role === 'student';
 
-  const [activeTab, setActiveTab] = useState<'meetings' | 'groups' | 'students' | 'users' | 'careers'>(
+  const [activeTab, setActiveTab] = useState<'meetings' | 'groups' | 'students' | 'users' | 'programs' | 'inquiries' | 'careers'>(
     'meetings'
   );
   const [searchTerm, setSearchTerm] = useState('');
 
   // HTML Delete Confirmation Modal State
   const [confirmDeleteAction, setConfirmDeleteAction] = useState<{
-    type: 'user' | 'meeting' | 'group' | 'careerApp';
+    type: 'user' | 'meeting' | 'group' | 'careerApp' | 'program' | 'inquiry';
     id: string;
     title: string;
   } | null>(null);
@@ -78,6 +92,30 @@ export const Dashboard: React.FC = () => {
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
   const [broadcastTitle, setBroadcastTitle] = useState('');
   const [broadcastMessage, setBroadcastMessage] = useState('');
+
+  // Program CRUD Modal State
+  const [showProgramModal, setShowProgramModal] = useState(false);
+  const [editProgramData, setEditProgramData] = useState<ProgramItem | null>(null);
+  const [programForm, setProgramForm] = useState<Omit<ProgramItem, 'id'>>({
+    titleEn: '',
+    titleAr: '',
+    subject: 'Math',
+    stage: 'Foundations & Primary',
+    stageAr: 'المرحلة التأسيسية والابتدائية',
+    ageRange: '5 - 12 Years',
+    schedule: '2 Sessions / Week',
+    sessionsCount: '16 Live Sessions',
+    price: 'Free Trial Available',
+    descriptionEn: '',
+    descriptionAr: '',
+    featuresEn: ['Interactive visual tools', 'Diagnostic quizzes', 'Small group breakout'],
+    featuresAr: ['أدوات تفاعلية مرئية', 'اختبارات تشخيصية مستمرة', 'مجموعات صغيرة تفاعلية']
+  });
+
+  // Inquiry Reply & Filter Modal State
+  const [replyInquiryModalData, setReplyInquiryModalData] = useState<InquiryMessage | null>(null);
+  const [inquiryReplyText, setInquiryReplyText] = useState('');
+  const [inquiryFilterStatus, setInquiryFilterStatus] = useState<'all' | 'pending' | 'answered'>('all');
 
   // Create Meeting State
   const [showMeetingModal, setShowMeetingModal] = useState(false);
@@ -238,7 +276,7 @@ export const Dashboard: React.FC = () => {
     setEditGroup(null);
   };
 
-  // Admin Create New User Submit
+  // Admin Create New User Submit (NO MANDATORY EMAIL, completely safe from undefined)
   const handleAdminCreateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUserName.trim() || !newUserUsername.trim()) {
@@ -247,14 +285,15 @@ export const Dashboard: React.FC = () => {
     }
 
     const newId = 'user_' + Date.now();
+    const cleanUsername = newUserUsername.toLowerCase().trim();
     const newUser: User = {
       id: newId,
-      name: newUserName,
-      username: newUserUsername.toLowerCase().trim(),
+      name: newUserName.trim(),
+      username: cleanUsername,
       password: newUserPassword || '123456',
       role: newUserRole,
-      groupName: newUserGroup || undefined,
-      email: newUserEmail || `${newUserUsername}@learnacademy.com`,
+      groupName: newUserGroup.trim() || '',
+      email: newUserEmail.trim() || `${cleanUsername}@learn.academy`,
       scoreMath: 0,
       scoreArabic: 0,
       scoreEnglish: 0,
@@ -266,8 +305,8 @@ export const Dashboard: React.FC = () => {
     await registerOrLoginUser(newUser);
 
     // If assigned to a group, update group document
-    if (newUserGroup) {
-      const g = groups.find((grp) => grp.name === newUserGroup);
+    if (newUserGroup.trim()) {
+      const g = groups.find((grp) => grp.name === newUserGroup.trim());
       if (g) {
         await assignStudentToGroup(newId, g.id);
       }
@@ -278,6 +317,8 @@ export const Dashboard: React.FC = () => {
     setNewUserName('');
     setNewUserUsername('');
     setNewUserPassword('123456');
+    setNewUserEmail('');
+    setNewUserGroup('');
   };
 
   // Admin Full Edit User Submit
@@ -289,6 +330,84 @@ export const Dashboard: React.FC = () => {
     setEditUserModalData(null);
   };
 
+  // Program Handlers
+  const handleOpenCreateProgram = () => {
+    setEditProgramData(null);
+    setProgramForm({
+      titleEn: '',
+      titleAr: '',
+      subject: 'Math',
+      stage: 'Foundations & Primary',
+      stageAr: 'المرحلة التأسيسية والابتدائية',
+      ageRange: '5 - 12 Years',
+      schedule: '2 Sessions / Week',
+      sessionsCount: '16 Live Sessions',
+      price: 'Free Trial Available',
+      descriptionEn: '',
+      descriptionAr: '',
+      featuresEn: ['Interactive visual tools', 'Continuous diagnostic quizzes', 'Small group breakout sessions'],
+      featuresAr: ['أدوات تفاعلية مرئية', 'اختبارات تشخيصية مستمرة', 'مجموعات صغيرة تفاعلية']
+    });
+    setShowProgramModal(true);
+  };
+
+  const handleOpenEditProgram = (prog: ProgramItem) => {
+    setEditProgramData(prog);
+    setProgramForm({
+      titleEn: prog.titleEn,
+      titleAr: prog.titleAr,
+      subject: prog.subject,
+      stage: prog.stage,
+      stageAr: prog.stageAr,
+      ageRange: prog.ageRange,
+      schedule: prog.schedule,
+      sessionsCount: prog.sessionsCount,
+      price: prog.price,
+      descriptionEn: prog.descriptionEn,
+      descriptionAr: prog.descriptionAr,
+      featuresEn: prog.featuresEn || [],
+      featuresAr: prog.featuresAr || []
+    });
+    setShowProgramModal(true);
+  };
+
+  const handleSaveProgram = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!programForm.titleEn.trim() || !programForm.titleAr.trim()) {
+      showToast('error', 'Please enter program title in English and Arabic', 'يرجى كتابة عنوان البرنامج باللغتين');
+      return;
+    }
+
+    if (editProgramData) {
+      await updateProgram({
+        ...programForm,
+        id: editProgramData.id
+      });
+      showToast('success', 'Program updated successfully!', 'تم تحديث البرنامج بنجاح!');
+    } else {
+      await createProgram(programForm);
+      showToast('success', 'New program created successfully!', 'تمت إضافة البرنامج بنجاح!');
+    }
+
+    setShowProgramModal(false);
+    setEditProgramData(null);
+  };
+
+  // Inquiry Reply Handler
+  const handleSendInquiryReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyInquiryModalData || !inquiryReplyText.trim()) return;
+
+    await replyToInquiry(
+      replyInquiryModalData.id,
+      inquiryReplyText.trim(),
+      currentUser?.name || 'Learn Academy Admin'
+    );
+    showToast('success', 'Reply submitted to inquiry!', 'تم إرسال الرد على الاستفسار!');
+    setReplyInquiryModalData(null);
+    setInquiryReplyText('');
+  };
+
   // Execute Deletion from HTML Confirm Modal
   const handleConfirmDeleteExecute = async () => {
     if (!confirmDeleteAction) return;
@@ -298,6 +417,8 @@ export const Dashboard: React.FC = () => {
     if (type === 'meeting') await deleteMeeting(id);
     if (type === 'group') await deleteGroup(id);
     if (type === 'careerApp') await deleteCareerApp(id);
+    if (type === 'program') await deleteProgram(id);
+    if (type === 'inquiry') await deleteInquiry(id);
 
     setConfirmDeleteAction(null);
   };
@@ -580,6 +701,28 @@ export const Dashboard: React.FC = () => {
                     }`}
                   >
                     User Accounts & Roles ({users.length})
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('programs')}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all glow-btn ${
+                      activeTab === 'programs'
+                        ? 'bg-amber-400 text-slate-950 shadow'
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                  >
+                    Programs & Curricula ({programs.length})
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('inquiries')}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all glow-btn ${
+                      activeTab === 'inquiries'
+                        ? 'bg-amber-400 text-slate-950 shadow'
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                  >
+                    Inquiries & Hub ({inquiries.length})
                   </button>
 
                   <button
@@ -959,6 +1102,322 @@ export const Dashboard: React.FC = () => {
             </div>
           )}
 
+          {/* PROGRAMS & CURRICULA TAB (Admin only: Edit, Add, Delete Everything) */}
+          {activeTab === 'programs' && isAdmin && (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-purple-100 space-y-6 glow-card">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                    <Layers className="w-6 h-6 text-purple-600" />
+                    <span>Academic Programs & Curricula Management</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Manage, edit, add, or delete programs live on the home page and across the entire platform.
+                  </p>
+                </div>
+                <button
+                  onClick={handleOpenCreateProgram}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm shadow-md hover:from-purple-500 hover:to-indigo-500 transition-all flex items-center gap-2 glow-btn"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add New Program</span>
+                </button>
+              </div>
+
+              {programs.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
+                  <BookOpen className="w-10 h-10 text-slate-300 mx-auto" />
+                  <p className="text-sm font-bold text-slate-600">No programs registered in Firestore yet.</p>
+                  <button
+                    onClick={handleOpenCreateProgram}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold"
+                  >
+                    Create First Program
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {programs
+                    .filter((p) =>
+                      searchTerm
+                        ? p.titleEn.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          p.titleAr.includes(searchTerm) ||
+                          p.subject.toLowerCase().includes(searchTerm.toLowerCase())
+                        : true
+                    )
+                    .map((prog) => {
+                      const subjectBadge =
+                        prog.subject === 'Math'
+                          ? { bg: 'bg-amber-100 text-amber-800 border-amber-200', icon: Calculator }
+                          : prog.subject === 'Arabic'
+                          ? { bg: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: BookOpen }
+                          : { bg: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: Languages };
+                      const IconComp = subjectBadge.icon;
+
+                      return (
+                        <div
+                          key={prog.id}
+                          className="bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-all space-y-4"
+                        >
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <span
+                                className={`px-2.5 py-1 rounded-lg text-xs font-bold border flex items-center gap-1.5 ${subjectBadge.bg}`}
+                              >
+                                <IconComp className="w-3.5 h-3.5" />
+                                <span>{prog.subject}</span>
+                              </span>
+                              <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
+                                {prog.price || 'Free Trial'}
+                              </span>
+                            </div>
+
+                            <div>
+                              <h4 className="text-base font-black text-slate-900 leading-snug">{prog.titleEn}</h4>
+                              <p className="text-xs font-bold text-purple-600 font-cairo mt-0.5">{prog.titleAr}</p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 text-[11px] text-slate-600">
+                              <span className="bg-white px-2 py-1 rounded-md border border-slate-200 font-semibold">
+                                Stage: {prog.stage}
+                              </span>
+                              <span className="bg-white px-2 py-1 rounded-md border border-slate-200 font-semibold">
+                                Ages: {prog.ageRange}
+                              </span>
+                              <span className="bg-white px-2 py-1 rounded-md border border-slate-200 font-semibold">
+                                {prog.schedule}
+                              </span>
+                              <span className="bg-white px-2 py-1 rounded-md border border-slate-200 font-semibold">
+                                {prog.sessionsCount}
+                              </span>
+                            </div>
+
+                            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                              {prog.descriptionEn}
+                            </p>
+
+                            {prog.featuresEn && prog.featuresEn.length > 0 && (
+                              <div className="space-y-1 pt-1 border-t border-slate-200/60">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                  Features ({prog.featuresEn.length})
+                                </span>
+                                <ul className="text-xs text-slate-600 space-y-0.5 list-disc list-inside">
+                                  {prog.featuresEn.slice(0, 3).map((f, i) => (
+                                    <li key={i} className="truncate">{f}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+                            <button
+                              onClick={() => handleOpenEditProgram(prog)}
+                              className="px-3 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-800 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() =>
+                                setConfirmDeleteAction({
+                                  type: 'program',
+                                  id: prog.id,
+                                  title: `${prog.titleEn} (${prog.subject})`
+                                })
+                              }
+                              className="p-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 transition-colors"
+                              title="Delete Program"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* INQUIRIES & COMMUNICATION HUB TAB (Admin only) */}
+          {activeTab === 'inquiries' && isAdmin && (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-purple-100 space-y-6 glow-card">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                    <MessageSquare className="w-6 h-6 text-purple-600" />
+                    <span>Inquiries & Communication Hub Center</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Manage and respond directly to messages sent via /ask/* and /talk/* channels.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => navigate('/ask/admin')}
+                    className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold border border-purple-200"
+                  >
+                    View /ask/admin
+                  </button>
+                  <button
+                    onClick={() => navigate('/talk/student')}
+                    className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200"
+                  >
+                    View /talk/student
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Filter Tabs */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setInquiryFilterStatus('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    inquiryFilterStatus === 'all'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  All ({inquiries.length})
+                </button>
+                <button
+                  onClick={() => setInquiryFilterStatus('pending')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    inquiryFilterStatus === 'pending'
+                      ? 'bg-amber-500 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  Pending ({inquiries.filter((i) => i.status === 'pending').length})
+                </button>
+                <button
+                  onClick={() => setInquiryFilterStatus('answered')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    inquiryFilterStatus === 'answered'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  Answered ({inquiries.filter((i) => i.status === 'answered').length})
+                </button>
+              </div>
+
+              {/* Inquiries List */}
+              {inquiries.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
+                  <HelpCircle className="w-10 h-10 text-slate-300 mx-auto" />
+                  <p className="text-sm font-bold text-slate-600">No inquiries received yet.</p>
+                  <p className="text-xs text-slate-400">Inquiries submitted on /ask/* and /talk/* routes appear here in real time.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {inquiries
+                    .filter((inq) => {
+                      if (inquiryFilterStatus === 'pending') return inq.status === 'pending';
+                      if (inquiryFilterStatus === 'answered') return inq.status === 'answered';
+                      return true;
+                    })
+                    .filter((inq) => {
+                      if (!searchTerm) return true;
+                      const s = searchTerm.toLowerCase();
+                      return (
+                        inq.senderName.toLowerCase().includes(s) ||
+                        (inq.subject && inq.subject.toLowerCase().includes(s)) ||
+                        inq.content.toLowerCase().includes(s) ||
+                        inq.channel.toLowerCase().includes(s)
+                      );
+                    })
+                    .map((inq) => (
+                      <div
+                        key={inq.id}
+                        className={`p-5 rounded-2xl border transition-all space-y-3 ${
+                          inq.status === 'answered'
+                            ? 'bg-slate-50/70 border-slate-200'
+                            : 'bg-amber-50/40 border-amber-200/80 shadow-sm'
+                        }`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-black text-slate-900 text-base">{inq.senderName}</span>
+                            <span className="text-xs bg-purple-100 text-purple-800 font-bold px-2.5 py-0.5 rounded-full">
+                              /{inq.channel}
+                            </span>
+                            <span className="text-xs bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded-md capitalize">
+                              {inq.senderRole}
+                            </span>
+                            <span
+                              className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                                inq.status === 'answered'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : 'bg-amber-100 text-amber-900 animate-pulse'
+                              }`}
+                            >
+                              {inq.status === 'answered' ? '✓ Answered' : '● Pending Response'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setReplyInquiryModalData(inq);
+                                setInquiryReplyText(inq.reply || '');
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition-all glow-btn"
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              <span>{inq.status === 'answered' ? 'Edit Reply' : 'Reply'}</span>
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                setConfirmDeleteAction({
+                                  type: 'inquiry',
+                                  id: inq.id,
+                                  title: `${inq.senderName} - ${inq.subject || 'Inquiry'}`
+                                })
+                              }
+                              className="p-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 transition-colors"
+                              title="Delete Inquiry"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-4 text-xs text-slate-500 font-semibold">
+                          {inq.senderPhone && <span>Phone: <strong className="text-slate-700">{inq.senderPhone}</strong></span>}
+                          <span>Submitted: <strong className="text-slate-700">{inq.timestamp || new Date(inq.createdAt).toLocaleString()}</strong></span>
+                        </div>
+
+                        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-1">
+                          {inq.subject && <p className="text-xs font-bold text-purple-900">{inq.subject}</p>}
+                          <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{inq.content}</p>
+                        </div>
+
+                        {inq.status === 'answered' && inq.reply && (
+                          <div className="bg-emerald-50/80 p-3.5 rounded-xl border border-emerald-200 space-y-1">
+                            <div className="flex items-center justify-between text-[11px] font-bold text-emerald-800">
+                              <span>Official Response (by {inq.repliedBy || 'Admin'})</span>
+                              {inq.repliedAt && (
+                                <span className="font-normal text-emerald-700">
+                                  {inq.repliedAt}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-emerald-950 font-medium leading-relaxed whitespace-pre-wrap">
+                              {inq.reply}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
       )}
 
@@ -1045,12 +1504,12 @@ export const Dashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Email</label>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Email (Optional - No Email Required)</label>
                 <input
-                  type="email"
+                  type="text"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="e.g. adam@learnacademy.com"
+                  placeholder="Optional: leave empty if user has no email"
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none"
                 />
               </div>
@@ -1565,6 +2024,295 @@ export const Dashboard: React.FC = () => {
                   className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow transition-all glow-btn"
                 >
                   Broadcast Alert
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PROGRAM CREATE / EDIT MODAL (Admin only: Edit everything) */}
+      {showProgramModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-5 border border-purple-100 glow-card max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Layers className="w-5 h-5 text-purple-600" />
+                <h3 className="text-xl font-black text-slate-800">
+                  {editProgramData ? 'Edit Academic Program' : 'Create New Academic Program'}
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowProgramModal(false);
+                  setEditProgramData(null);
+                }}
+                className="p-1 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProgram} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Title (English) *</label>
+                  <input
+                    type="text"
+                    required
+                    value={programForm.titleEn}
+                    onChange={(e) => setProgramForm({ ...programForm, titleEn: e.target.value })}
+                    placeholder="e.g. Mental Math & Problem Solving"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Title (Arabic) *</label>
+                  <input
+                    type="text"
+                    required
+                    value={programForm.titleAr}
+                    onChange={(e) => setProgramForm({ ...programForm, titleAr: e.target.value })}
+                    placeholder="مثال: برنامج الحساب الذهني وحل المشكلات"
+                    dir="rtl"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Subject *</label>
+                  <select
+                    value={programForm.subject}
+                    onChange={(e) => setProgramForm({ ...programForm, subject: e.target.value as any })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none"
+                  >
+                    <option value="Math">Math (الرياضيات)</option>
+                    <option value="Arabic">Arabic (اللغة العربية)</option>
+                    <option value="English">English (اللغة الإنجليزية)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Target Ages</label>
+                  <input
+                    type="text"
+                    value={programForm.ageRange}
+                    onChange={(e) => setProgramForm({ ...programForm, ageRange: e.target.value })}
+                    placeholder="e.g. 5 - 12 Years"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Price Tag</label>
+                  <input
+                    type="text"
+                    value={programForm.price}
+                    onChange={(e) => setProgramForm({ ...programForm, price: e.target.value })}
+                    placeholder="e.g. Free Trial Available"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Stage (English)</label>
+                  <input
+                    type="text"
+                    value={programForm.stage}
+                    onChange={(e) => setProgramForm({ ...programForm, stage: e.target.value })}
+                    placeholder="e.g. Primary & Preparatory"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Stage (Arabic)</label>
+                  <input
+                    type="text"
+                    value={programForm.stageAr}
+                    onChange={(e) => setProgramForm({ ...programForm, stageAr: e.target.value })}
+                    placeholder="مثال: المرحلة الابتدائية والإعدادية"
+                    dir="rtl"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Schedule</label>
+                  <input
+                    type="text"
+                    value={programForm.schedule}
+                    onChange={(e) => setProgramForm({ ...programForm, schedule: e.target.value })}
+                    placeholder="e.g. 2 Sessions / Week"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Total Sessions</label>
+                  <input
+                    type="text"
+                    value={programForm.sessionsCount}
+                    onChange={(e) => setProgramForm({ ...programForm, sessionsCount: e.target.value })}
+                    placeholder="e.g. 16 Live Sessions"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Description (English)</label>
+                  <textarea
+                    rows={3}
+                    value={programForm.descriptionEn}
+                    onChange={(e) => setProgramForm({ ...programForm, descriptionEn: e.target.value })}
+                    placeholder="Detailed overview in English..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-600 resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Description (Arabic)</label>
+                  <textarea
+                    rows={3}
+                    value={programForm.descriptionAr}
+                    onChange={(e) => setProgramForm({ ...programForm, descriptionAr: e.target.value })}
+                    placeholder="وصف تفصيلي باللغة العربية..."
+                    dir="rtl"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-600 resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
+                    Features (English - one per line)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={(programForm.featuresEn || []).join('\n')}
+                    onChange={(e) =>
+                      setProgramForm({
+                        ...programForm,
+                        featuresEn: e.target.value.split('\n').filter((x) => x.trim())
+                      })
+                    }
+                    placeholder="Interactive live whiteboard&#10;Weekly homework follow-up&#10;Monthly diagnostic exam"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
+                    Features (Arabic - one per line)
+                  </label>
+                  <textarea
+                    rows={3}
+                    dir="rtl"
+                    value={(programForm.featuresAr || []).join('\n')}
+                    onChange={(e) =>
+                      setProgramForm({
+                        ...programForm,
+                        featuresAr: e.target.value.split('\n').filter((x) => x.trim())
+                      })
+                    }
+                    placeholder="سبورة تفاعلية ذكية&#10;متابعة الواجبات أسبوعياً&#10;اختبارات تشخيص دورية"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProgramModal(false);
+                    setEditProgramData(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold text-sm"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow transition-all glow-btn"
+                >
+                  {editProgramData ? 'Update Program' : 'Publish Program'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* INQUIRY OFFICIAL REPLY MODAL */}
+      {replyInquiryModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 border border-purple-100 glow-card">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-purple-600" />
+                <h3 className="text-xl font-black text-slate-800">Reply to Inquiry</h3>
+              </div>
+              <button
+                onClick={() => setReplyInquiryModalData(null)}
+                className="p-1 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-black text-slate-800">{replyInquiryModalData.senderName}</span>
+                <span className="bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-md">
+                  /{replyInquiryModalData.channel}
+                </span>
+              </div>
+              <p className="font-bold text-purple-900">{replyInquiryModalData.subject}</p>
+              <p className="text-slate-600 italic bg-white p-2.5 rounded-xl border border-slate-200/80">
+                "{replyInquiryModalData.content}"
+              </p>
+            </div>
+
+            <form onSubmit={handleSendInquiryReply} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1">
+                  Official Response (Will be recorded in Firestore)
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={inquiryReplyText}
+                  onChange={(e) => setInquiryReplyText(e.target.value)}
+                  placeholder="Type your official answer/response here..."
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-600 resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setReplyInquiryModalData(null)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow transition-all flex items-center gap-2 glow-btn"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Submit Reply</span>
                 </button>
               </div>
             </form>

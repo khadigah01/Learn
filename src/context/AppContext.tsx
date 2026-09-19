@@ -7,7 +7,7 @@ import {
   deleteDoc,
   onSnapshot
 } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, handleFirestoreError, OperationType, cleanFirestoreData } from '../lib/firebase';
 import {
   User,
   StudentGroup,
@@ -16,8 +16,11 @@ import {
   CareerApplication,
   ToastMessage,
   Language,
-  SubjectType
+  SubjectType,
+  InquiryMessage,
+  ProgramItem
 } from '../types';
+import { initialProgramsData } from '../data/programsData';
 
 interface AppContextType {
   language: Language;
@@ -29,6 +32,8 @@ interface AppContextType {
   meetings: LiveMeeting[];
   notifications: NotificationItem[];
   careerApps: CareerApplication[];
+  inquiries: InquiryMessage[];
+  programs: ProgramItem[];
   toasts: ToastMessage[];
   showToast: (type: 'success' | 'error' | 'info', messageEn: string, messageAr?: string) => void;
   removeToast: (id: string) => void;
@@ -56,6 +61,16 @@ interface AppContextType {
   submitCareerApp: (app: Omit<CareerApplication, 'id' | 'appliedAt' | 'status'>) => Promise<void>;
   updateCareerAppStatus: (appId: string, status: CareerApplication['status']) => Promise<void>;
   deleteCareerApp: (appId: string) => Promise<void>;
+
+  // Inquiries / Communication Hub Actions (/ask/* & /talk/*)
+  submitInquiry: (data: Omit<InquiryMessage, 'id' | 'createdAt' | 'status'>) => Promise<string>;
+  replyToInquiry: (id: string, replyText: string, replierName: string) => Promise<void>;
+  deleteInquiry: (id: string) => Promise<void>;
+
+  // Programs / Curriculum CRUD (Admin)
+  createProgram: (prog: Omit<ProgramItem, 'id'>) => Promise<void>;
+  updateProgram: (prog: ProgramItem) => Promise<void>;
+  deleteProgram: (id: string) => Promise<void>;
 
   // Notifications Actions
   markAllNotificationsRead: () => Promise<void>;
@@ -88,25 +103,78 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [meetings, setMeetings] = useState<LiveMeeting[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [careerApps, setCareerApps] = useState<CareerApplication[]>([]);
+  const [inquiries, setInquiries] = useState<InquiryMessage[]>([]);
+  const [programs, setPrograms] = useState<ProgramItem[]>(initialProgramsData);
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [activeTestSubject, setActiveTestSubject] = useState<SubjectType | null>(null);
   const [activeMeetingRoom, setActiveMeetingRoom] = useState<LiveMeeting | null>(null);
 
-  // Client-side routing state
-  const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname || '/');
+  // Client-side routing state supporting Hash routing, GitHub Pages subpaths, and direct paths
+  const getNormalizedPath = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has('p')) {
+      const p = searchParams.get('p')!;
+      return p.startsWith('/') ? p : '/' + p;
+    }
+    if (window.location.hash) {
+      const hashPath = window.location.hash.replace(/^#/, '');
+      if (hashPath) return hashPath.startsWith('/') ? hashPath : '/' + hashPath;
+    }
+    const rawPath = window.location.pathname || '/';
+    const knownRoutes = [
+      '/ask/admin',
+      '/ask/teacher',
+      '/ask/student',
+      '/talk/admin',
+      '/talk/teacher',
+      '/talk/student',
+      '/ads',
+      '/register',
+      '/login',
+      '/login/student',
+      '/login/teacher',
+      '/login/coordinator',
+      '/login/admin',
+      '/dashboard',
+      '/games',
+      '/careers',
+      '/notifications'
+    ];
+    for (const route of knownRoutes) {
+      if (rawPath.endsWith(route)) {
+        return route;
+      }
+    }
+    if (rawPath.includes('/meeting/')) {
+      const idx = rawPath.indexOf('/meeting/');
+      return rawPath.substring(idx);
+    }
+    return rawPath;
+  };
+
+  const [currentPath, setCurrentPath] = useState<string>(getNormalizedPath);
 
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPath(window.location.pathname || '/');
+      setCurrentPath(getNormalizedPath());
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
   }, []);
 
   const navigate = (path: string) => {
-    window.history.pushState({}, '', path);
-    setCurrentPath(path);
+    const cleanPath = path.startsWith('/') ? path : '/' + path;
+    if (window.location.hash) {
+      window.location.hash = '#' + cleanPath;
+    } else {
+      window.history.pushState({}, '', cleanPath);
+    }
+    setCurrentPath(cleanPath);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -227,12 +295,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     );
 
+    // 6. Inquiries / Communication messages listener
+    const unsubInquiries = onSnapshot(
+      collection(db, 'inquiries'),
+      (snapshot) => {
+        const iList: InquiryMessage[] = [];
+        snapshot.forEach((docSnap) => {
+          iList.push({ id: docSnap.id, ...docSnap.data() } as InquiryMessage);
+        });
+        // Sort descending by createdAt
+        iList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        setInquiries(iList);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'inquiries');
+      }
+    );
+
+    // 7. Programs listener
+    const unsubPrograms = onSnapshot(
+      collection(db, 'programs'),
+      (snapshot) => {
+        if (snapshot.empty) {
+          initialProgramsData.forEach((p) => {
+            setDoc(doc(db, 'programs', p.id), cleanFirestoreData(p));
+          });
+          setPrograms(initialProgramsData);
+        } else {
+          const pList: ProgramItem[] = [];
+          snapshot.forEach((docSnap) => {
+            pList.push({ id: docSnap.id, ...docSnap.data() } as ProgramItem);
+          });
+          setPrograms(pList);
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'programs');
+      }
+    );
+
     return () => {
       unsubUsers();
       unsubGroups();
       unsubMeetings();
       unsubNotifs();
       unsubCareer();
+      unsubInquiries();
+      unsubPrograms();
     };
   }, []);
 
@@ -249,13 +358,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Register or Login user in Firestore
+  // Register or Login user in Firestore - FULL SANITIZATION (NO undefined values)
   const registerOrLoginUser = async (userData: User): Promise<User> => {
     const userRef = doc(db, 'users', userData.id);
+    const sanitizedUser: User = {
+      ...userData,
+      groupName: userData.groupName || '',
+      email: userData.email || '',
+      password: userData.password || '123456',
+      scoreMath: userData.scoreMath ?? 0,
+      scoreArabic: userData.scoreArabic ?? 0,
+      scoreEnglish: userData.scoreEnglish ?? 0,
+      levelMath: userData.levelMath || 'Beginner',
+      levelArabic: userData.levelArabic || 'Beginner',
+      levelEnglish: userData.levelEnglish || 'Beginner'
+    };
+
     try {
-      await setDoc(userRef, userData, { merge: true });
-      setCurrentUser(userData);
-      return userData;
+      await setDoc(userRef, cleanFirestoreData(sanitizedUser), { merge: true });
+      setCurrentUser(sanitizedUser);
+      return sanitizedUser;
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `users/${userData.id}`);
       throw error;
@@ -268,13 +390,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newMeeting: LiveMeeting = {
       ...newMeetingData,
       id: meetingId,
+      groupId: newMeetingData.groupId || '',
+      groupName: newMeetingData.groupName || '',
       status: 'scheduled',
       isTeacherInRoom: true
     };
 
     try {
-      // Write meeting to Firestore
-      await setDoc(doc(db, 'meetings', meetingId), newMeeting);
+      // Write meeting to Firestore with clean data
+      await setDoc(doc(db, 'meetings', meetingId), cleanFirestoreData(newMeeting));
 
       // Create notification documents in Firestore for assigned students
       for (const studentId of newMeeting.assignedStudentIds) {
@@ -291,7 +415,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           meetingId: newMeeting.id,
           read: false
         };
-        await setDoc(doc(db, 'notifications', notifId), notifData);
+        await setDoc(doc(db, 'notifications', notifId), cleanFirestoreData(notifData));
       }
 
       showToast(
@@ -311,10 +435,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!meeting) return;
     const nextStatus = meeting.status === 'scheduled' ? 'live' : meeting.status === 'live' ? 'ended' : 'scheduled';
     try {
-      await updateDoc(doc(db, 'meetings', meetingId), {
+      await updateDoc(doc(db, 'meetings', meetingId), cleanFirestoreData({
         status: nextStatus,
         isTeacherInRoom: nextStatus === 'live'
-      });
+      }));
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `meetings/${meetingId}`);
     }
@@ -331,9 +455,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const createGroup = async (groupData: Omit<StudentGroup, 'id'>) => {
     const groupId = 'group_' + Date.now();
-    const newGroup: StudentGroup = { ...groupData, id: groupId };
+    const newGroup: StudentGroup = {
+      ...groupData,
+      id: groupId,
+      teacherId: groupData.teacherId || '',
+      teacherName: groupData.teacherName || '',
+      coordinatorId: groupData.coordinatorId || '',
+      coordinatorName: groupData.coordinatorName || '',
+      notes: groupData.notes || ''
+    };
     try {
-      await setDoc(doc(db, 'groups', groupId), newGroup);
+      await setDoc(doc(db, 'groups', groupId), cleanFirestoreData(newGroup));
       showToast('success', `Group "${newGroup.name}" created!`, `تم إنشاء المجموعة "${newGroup.name}"!`);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `groups/${groupId}`);
@@ -342,7 +474,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateGroup = async (updatedGroup: StudentGroup) => {
     try {
-      await setDoc(doc(db, 'groups', updatedGroup.id), updatedGroup, { merge: true });
+      await setDoc(doc(db, 'groups', updatedGroup.id), cleanFirestoreData(updatedGroup), { merge: true });
       showToast('success', 'Group updated in Firestore', 'تم تحديث المجموعة بنجاح');
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `groups/${updatedGroup.id}`);
@@ -368,7 +500,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     try {
-      await updateDoc(doc(db, 'users', userId), updates);
+      await updateDoc(doc(db, 'users', userId), cleanFirestoreData(updates));
 
       if (currentUser && currentUser.id === userId) {
         setCurrentUser({
@@ -390,8 +522,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : [...targetGroup.studentIds, studentId];
 
     try {
-      await updateDoc(doc(db, 'groups', groupId), { studentIds: updatedStudentIds });
-      await updateDoc(doc(db, 'users', studentId), { groupName: targetGroup.name });
+      await updateDoc(doc(db, 'groups', groupId), cleanFirestoreData({ studentIds: updatedStudentIds }));
+      await updateDoc(doc(db, 'users', studentId), cleanFirestoreData({ groupName: targetGroup.name }));
 
       if (currentUser && currentUser.id === studentId) {
         setCurrentUser({ ...currentUser, groupName: targetGroup.name });
@@ -413,16 +545,93 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     try {
-      await setDoc(doc(db, 'careerApps', appId), newApp);
+      await setDoc(doc(db, 'careerApps', appId), cleanFirestoreData(newApp));
       showToast('success', 'Career Application submitted!', 'تم تقديم طلب الوظيفة بنجاح!');
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `careerApps/${appId}`);
     }
   };
 
+  // Inquiries / Communication Hub Actions
+  const submitInquiry = async (data: Omit<InquiryMessage, 'id' | 'createdAt' | 'status'>): Promise<string> => {
+    const inqId = 'inq_' + Date.now() + Math.random().toString(36).substring(2, 6);
+    const newInquiry: InquiryMessage = {
+      ...data,
+      id: inqId,
+      status: 'pending',
+      createdAt: Date.now()
+    };
+
+    try {
+      await setDoc(doc(db, 'inquiries', inqId), cleanFirestoreData(newInquiry));
+      showToast(
+        'success',
+        'Your message has been sent! Academic team has been notified.',
+        'تم إرسال رسالتك بنجاح! تم إشعار فريق الأكاديمية للمتابعة.'
+      );
+      return inqId;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `inquiries/${inqId}`);
+      throw error;
+    }
+  };
+
+  const replyToInquiry = async (id: string, replyText: string, replierName: string) => {
+    try {
+      await updateDoc(doc(db, 'inquiries', id), cleanFirestoreData({
+        reply: replyText,
+        repliedBy: replierName,
+        repliedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'answered'
+      }));
+      showToast('success', 'Reply saved and delivered!', 'تم حفظ وإرسال الرد بنجاح!');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `inquiries/${id}`);
+    }
+  };
+
+  const deleteInquiry = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'inquiries', id));
+      showToast('info', 'Inquiry deleted', 'تم حذف الرسالة بنجاح');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `inquiries/${id}`);
+    }
+  };
+
+  // Program Management (Admin Full CRUD)
+  const createProgram = async (prog: Omit<ProgramItem, 'id'>) => {
+    const progId = 'prog_' + Date.now();
+    const newProg: ProgramItem = { ...prog, id: progId };
+    try {
+      await setDoc(doc(db, 'programs', progId), cleanFirestoreData(newProg));
+      showToast('success', `Program "${newProg.titleEn}" added!`, `تمت إضافة البرنامج بنجاح!`);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `programs/${progId}`);
+    }
+  };
+
+  const updateProgram = async (prog: ProgramItem) => {
+    try {
+      await setDoc(doc(db, 'programs', prog.id), cleanFirestoreData(prog), { merge: true });
+      showToast('success', 'Program updated in Firestore', 'تم تحديث البرنامج بنجاح');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `programs/${prog.id}`);
+    }
+  };
+
+  const deleteProgram = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'programs', id));
+      showToast('info', 'Program removed from Firestore', 'تم حذف البرنامج بنجاح');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `programs/${id}`);
+    }
+  };
+
   const updateUser = async (userId: string, updates: Partial<User>) => {
     try {
-      await updateDoc(doc(db, 'users', userId), updates);
+      await updateDoc(doc(db, 'users', userId), cleanFirestoreData(updates));
       if (currentUser && currentUser.id === userId) {
         setCurrentUser({ ...currentUser, ...updates });
       }
@@ -443,7 +652,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateCareerAppStatus = async (appId: string, status: CareerApplication['status']) => {
     try {
-      await updateDoc(doc(db, 'careerApps', appId), { status });
+      await updateDoc(doc(db, 'careerApps', appId), cleanFirestoreData({ status }));
       showToast('success', `Application status updated to ${status}`, `تم تغيير حالة الطلب إلى ${status}`);
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `careerApps/${appId}`);
@@ -483,7 +692,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           type: 'general',
           read: false
         };
-        await setDoc(doc(db, 'notifications', notifId), notifData);
+        await setDoc(doc(db, 'notifications', notifId), cleanFirestoreData(notifData));
       }
       showToast('success', 'Broadcast announcement sent to all users!', 'تم إرسال الإعلان لجميع المستخدمين بنجاح!');
     } catch (error) {
@@ -495,7 +704,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       for (const n of notifications) {
         if (!n.read) {
-          await updateDoc(doc(db, 'notifications', n.id), { read: true });
+          await updateDoc(doc(db, 'notifications', n.id), cleanFirestoreData({ read: true }));
         }
       }
       showToast('success', 'All notifications marked as read', 'تم تحديث جميع الإشعارات كُمقروءة');
@@ -516,6 +725,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         meetings,
         notifications,
         careerApps,
+        inquiries,
+        programs,
         toasts,
         showToast,
         removeToast,
@@ -533,6 +744,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         submitCareerApp,
         updateCareerAppStatus,
         deleteCareerApp,
+        submitInquiry,
+        replyToInquiry,
+        deleteInquiry,
+        createProgram,
+        updateProgram,
+        deleteProgram,
         markAllNotificationsRead,
         deleteNotification,
         sendBroadcastNotification,

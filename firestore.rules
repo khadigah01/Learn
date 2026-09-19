@@ -46,5 +46,17 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if true;
     }
+
+    // Academic Programs Collection
+    match /programs/{programId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // Inquiries Collection
+    match /inquiries/{inquiryId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
   }
 }

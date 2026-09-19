@@ -56,6 +56,29 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
+/**
+ * Recursively sanitizes data before sending to Firestore, stripping any undefined properties
+ * to prevent 'Unsupported field value: undefined' errors.
+ */
+export function cleanFirestoreData<T>(obj: T): T {
+  if (obj === undefined) {
+    return null as any;
+  }
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map((item) => cleanFirestoreData(item)).filter((v) => v !== undefined) as any;
+  }
+  const result: Record<string, any> = {};
+  for (const [key, val] of Object.entries(obj)) {
+    if (val !== undefined) {
+      result[key] = cleanFirestoreData(val);
+    }
+  }
+  return result as any;
+}
+
 // Test Connection on Initial Boot
 async function testConnection() {
   try {

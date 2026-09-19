@@ -141,6 +141,18 @@ export const Navbar: React.FC = () => {
           </button>
 
           <button
+            onClick={() => handleNav('/ask/admin')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
+              currentPath.startsWith('/ask') || currentPath.startsWith('/talk')
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'text-amber-200 hover:bg-amber-400/20 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>{language === 'ar' ? 'تواصل واسأل (/ask & /talk)' : 'Ask & Talk'}</span>
+          </button>
+
+          <button
             onClick={() => handleNav('/careers')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
               currentPath === '/careers'
@@ -376,6 +388,22 @@ export const Navbar: React.FC = () => {
                   className="w-full text-left rtl:text-right text-slate-800 hover:text-indigo-600 font-extrabold text-base sm:text-lg transition-colors cursor-pointer flex items-center justify-between"
                 >
                   <span>{language === 'ar' ? 'تواصل معنا' : 'Contact'}</span>
+                </button>
+              </div>
+
+              {/* Ask & Talk Communication Hub */}
+              <div className="py-2.5">
+                <button
+                  onClick={() => handleNav('/ask/admin')}
+                  className="w-full text-left rtl:text-right text-indigo-700 hover:text-indigo-900 font-extrabold text-base sm:text-lg transition-colors cursor-pointer flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-500" />
+                    <span>{language === 'ar' ? 'مركز الاستفسارات والمحادثات (/ask & /talk)' : 'Ask & Talk Channels'}</span>
+                  </span>
+                  <span className="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">
+                    +20 15 50128876
+                  </span>
                 </button>
               </div>
 

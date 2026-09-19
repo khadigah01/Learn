@@ -103,6 +103,55 @@
         "appliedAt": { "type": "string" }
       },
       "required": ["id", "positionId", "fullName", "email", "status"]
+    },
+    "ProgramItem": {
+      "title": "Academic Program",
+      "description": "Curriculum programs offered across Math, Arabic, and English",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "titleEn": { "type": "string" },
+        "titleAr": { "type": "string" },
+        "subject": { "type": "string", "enum": ["Math", "Arabic", "English"] },
+        "stage": { "type": "string" },
+        "stageAr": { "type": "string" },
+        "ageRange": { "type": "string" },
+        "schedule": { "type": "string" },
+        "sessionsCount": { "type": "string" },
+        "price": { "type": "string" },
+        "descriptionEn": { "type": "string" },
+        "descriptionAr": { "type": "string" },
+        "featuresEn": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "featuresAr": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["id", "titleEn", "titleAr", "subject"]
+    },
+    "InquiryMessage": {
+      "title": "Inquiry Message",
+      "description": "Questions and inquiries submitted to admin, teacher, coordinator, or student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderRole": { "type": "string" },
+        "senderPhone": { "type": "string" },
+        "channel": { "type": "string" },
+        "subject": { "type": "string" },
+        "content": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "answered"] },
+        "createdAt": { "type": "number" },
+        "timestamp": { "type": "string" },
+        "reply": { "type": "string" },
+        "repliedBy": { "type": "string" },
+        "repliedAt": { "type": "string" }
+      },
+      "required": ["id", "senderName", "channel", "content", "status"]
     }
   },
   "firestore": {
@@ -125,6 +174,14 @@
     "/careerApps/{appId}": {
       "schema": "CareerApplication",
       "description": "Career job applications collection"
+    },
+    "/programs/{programId}": {
+      "schema": "ProgramItem",
+      "description": "Academic curricula and programs collection"
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": "InquiryMessage",
+      "description": "Inquiries and questions communication collection"
     }
   }
 }
