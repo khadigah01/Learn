@@ -146,10 +146,10 @@ export const Navbar: React.FC = () => {
     },
     {
       category: 'academic',
-      titleEn: 'Success Stories',
-      titleAr: 'قصص النجاح',
-      descEn: 'Student achievements and testimonials from satisfied families',
-      descAr: 'إنجازات الطلاب وتجارب العائلات الملهمة',
+      titleEn: 'Success Stories & Reviews',
+      titleAr: 'قصص النجاح والتقييمات',
+      descEn: 'Check reviews and success stories status',
+      descAr: 'متابعة حالة التقييمات وقصص النجاح',
       route: '#success-stories',
       icon: CheckCircle2,
       action: () => handleSectionNav('success-stories')
@@ -279,13 +279,13 @@ export const Navbar: React.FC = () => {
     },
     {
       category: 'academic',
-      titleEn: 'Careers & Job Openings (/careers)',
-      titleAr: 'الوظائف والشواغر الأكاديمية',
-      descEn: 'Apply for teaching positions, coordinators, and curriculum developers',
-      descAr: 'التقديم على وظائف التدريس والتنسيق وتطوير المناهج',
+      titleEn: 'Careers (/careers)',
+      titleAr: 'الوظائف والشواغر (/careers)',
+      descEn: 'Check current openings and recruitment status at Learn Academy',
+      descAr: 'متابعة حالة الوظائف والشواغر في أكاديمية ليرن',
       route: '/careers',
       icon: Briefcase,
-      badge: 'We are hiring',
+      badge: 'No Openings',
       action: () => handleNav('/careers')
     },
     {

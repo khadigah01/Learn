@@ -591,63 +591,32 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* SUCCESS STORIES SECTION */}
-      <section id="success-stories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 scroll-mt-24">
+      {/* SUCCESS STORIES AND REVIEWS SECTION */}
+      <section id="success-stories" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 scroll-mt-24">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-400/20 border border-emerald-300/30 text-emerald-200 text-xs font-bold">
             <Star className="w-4 h-4 text-amber-300" />
-            <span>{language === 'ar' ? 'قصص النجاح' : 'Success Stories'}</span>
+            <span>{language === 'ar' ? 'قصص النجاح والتقييمات' : 'Success Stories & Reviews'}</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-white">
-            {language === 'ar' ? 'ماذا يقول طلابنا وأولياء الأمور' : 'What Our Students & Parents Say'}
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            {language === 'ar' ? 'قصص النجاح والتقييمات' : 'Success Stories & Reviews'}
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 text-slate-800 space-y-4 glow-card">
-            <div className="flex items-center gap-1 text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
-              ))}
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
-              "تحسن مستوى ابني في الرياضيات بشكل ملحوظ بعد 3 أسابيع فقط مع أكاديمية Learn. الجلسات التفاعلية ممتازة جداً!"
-            </p>
-            <div>
-              <div className="font-extrabold text-slate-900 text-sm">أحمد المصرى (ولي أمر)</div>
-              <div className="text-[11px] text-slate-500 font-semibold">طالب في المرحلة الثانية</div>
-            </div>
+        <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-xl border border-slate-100 text-center space-y-4 glow-card">
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-amber-400 shadow-sm">
+            <Star className="w-7 h-7 fill-amber-300/40 text-amber-500" />
           </div>
 
-          <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 text-slate-800 space-y-4 glow-card">
-            <div className="flex items-center gap-1 text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
-              ))}
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
-              "كنت أواجه صعوبة كبيرة في المحادثة باللغة الإنجليزية، والآن أستطيع التحدث بثقة كبيرة مع معلمي والمجموعة!"
-            </p>
-            <div>
-              <div className="font-extrabold text-slate-900 text-sm">مريم حسن (طالبة)</div>
-              <div className="text-[11px] text-slate-500 font-semibold">برنامج الطلاقة الإنجليزية</div>
-            </div>
-          </div>
+          <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            {language === 'ar' ? 'لا توجد تقييمات متاحة حالياً' : 'No reviews available'}
+          </h3>
 
-          <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 text-slate-800 space-y-4 glow-card">
-            <div className="flex items-center gap-1 text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
-              ))}
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 italic leading-relaxed">
-              "المنصة ممتازة وسهلة الاستخدام، وتقارير المتابعة الدورية توفر لنا راحة بال كاملة كأولياء أمور."
-            </p>
-            <div>
-              <div className="font-extrabold text-slate-900 text-sm">سارة الخالد (ولية أمر)</div>
-              <div className="text-[11px] text-slate-500 font-semibold">طالب في برنامج العربية</div>
-            </div>
-          </div>
+          <p className="text-sm sm:text-base text-slate-600 max-w-lg mx-auto leading-relaxed">
+            {language === 'ar'
+              ? 'لا توجد أي مراجعات أو تقييمات منشورة في الوقت الحالي. يمكنك استكشاف برامجنا التعليمية واختبارات المستوى والتواصل مع الإدارة لأي استفسار.'
+              : 'There are currently no reviews or success stories published. Feel free to explore our educational curricula, take level assessment tests, or reach out to our team.'}
+          </p>
         </div>
       </section>
 
