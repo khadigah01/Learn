@@ -200,32 +200,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Real-time Firestore Listeners
   useEffect(() => {
-    // 1. Users listener
+    // 1. Users listener - Only admin account is real by default
     const unsubUsers = onSnapshot(
       collection(db, 'users'),
       (snapshot) => {
-        const defaultUsers: User[] = [
-          { id: 'admin', username: 'admin', password: 'admin', name: 'System Administrator', role: 'admin', groupName: '', scoreMath: 0, scoreArabic: 0, scoreEnglish: 0 },
-          { id: 'teacher', username: 'teacher', password: 'teacher', name: 'Sarah Johnson', role: 'teacher', groupName: '', scoreMath: 0, scoreArabic: 0, scoreEnglish: 0 },
-          { id: 'coordinator', username: 'coordinator', password: 'coordinator', name: 'Academic Coordinator', role: 'coordinator', groupName: '', scoreMath: 0, scoreArabic: 0, scoreEnglish: 0 },
-          { id: 'student', username: 'student', password: 'student', name: 'Ahmed Hassan', role: 'student', groupName: 'Group A - Beginners', scoreMath: 85, scoreArabic: 90, scoreEnglish: 88, levelMath: 'Advanced', levelArabic: 'Advanced', levelEnglish: 'Advanced' }
-        ];
+        const defaultAdmin: User = {
+          id: 'admin',
+          username: 'admin',
+          password: 'admin',
+          name: 'System Administrator',
+          role: 'admin',
+          groupName: '',
+          scoreMath: 0,
+          scoreArabic: 0,
+          scoreEnglish: 0
+        };
 
         if (snapshot.empty) {
-          defaultUsers.forEach((u) => setDoc(doc(db, 'users', u.id), u));
-          setUsers(defaultUsers);
+          setDoc(doc(db, 'users', 'admin'), defaultAdmin);
+          setUsers([defaultAdmin]);
         } else {
           const uList: User[] = [];
           snapshot.forEach((docSnap) => {
-            uList.push({ id: docSnap.id, ...docSnap.data() } as User);
+            const data = docSnap.data() as User;
+            // Purge legacy mock accounts if they match the old hardcoded demo credentials
+            if (
+              (docSnap.id === 'teacher' && data.name === 'Sarah Johnson' && data.password === 'teacher') ||
+              (docSnap.id === 'coordinator' && data.name === 'Academic Coordinator' && data.password === 'coordinator') ||
+              (docSnap.id === 'student' && data.name === 'Ahmed Hassan' && data.password === 'student')
+            ) {
+              deleteDoc(doc(db, 'users', docSnap.id)).catch(() => {});
+              return;
+            }
+            uList.push({ ...data, id: docSnap.id });
           });
 
           // Ensure default system admin document is synced to Firestore
           const hasAdmin = uList.some((u) => u.username === 'admin' || u.role === 'admin' || u.id === 'admin');
           if (!hasAdmin) {
-            const adminDoc = defaultUsers[0];
-            setDoc(doc(db, 'users', 'admin'), adminDoc);
-            uList.push(adminDoc);
+            setDoc(doc(db, 'users', 'admin'), defaultAdmin);
+            uList.push(defaultAdmin);
           }
           setUsers(uList);
         }

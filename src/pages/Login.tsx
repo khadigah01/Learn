@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Role, User as UserType } from '../types';
-import { User, Lock, Eye, EyeOff, LogIn, GraduationCap, ArrowRight } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, LogIn, GraduationCap, ArrowRight, AlertCircle } from 'lucide-react';
 
 interface Props {
   defaultRole?: Role;
@@ -15,14 +15,17 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
   const [selectedRole, setSelectedRole] = useState<Role>(defaultRole || 'student');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
 
     const cleanUsername = username.trim();
     const cleanPassword = password.trim();
 
     if (!cleanUsername || !cleanPassword) {
+      setErrorMessage('Please enter both username and password.');
       showToast('error', 'Please enter username and password', 'يرجى إدخال اسم المستخدم وكلمة المرور');
       return;
     }
@@ -32,7 +35,7 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
     try {
       const cleanLower = cleanUsername.toLowerCase();
 
-      // 1. Check if user is trying to log in as Admin
+      // 1. Default system administrator account (strictly admin / admin)
       if (cleanLower === 'admin' && cleanPassword === 'admin') {
         const adminUser: UserType = {
           id: 'admin',
@@ -48,50 +51,43 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
         return;
       }
 
-      // 2. Check if user exists in Firestore users array
+      // 2. Real account authentication: Check against Firestore registered users
       const existingUser = users.find(
-        (u) => u.username.toLowerCase() === cleanLower || u.id.toLowerCase() === cleanLower
+        (u) =>
+          (u.username && u.username.toLowerCase() === cleanLower) ||
+          (u.id && u.id.toLowerCase() === cleanLower)
       );
 
+      // Verify user exists in the database
       if (existingUser) {
-        const expectedPassword = existingUser.password || existingUser.username;
-        if (cleanPassword === expectedPassword || (cleanPassword === 'admin' && existingUser.role === 'admin')) {
+        // Strictly verify password matches the stored password for this real account
+        if (existingUser.password === cleanPassword) {
+          // Verify role matches the portal tab unless user is an admin
+          if (selectedRole && existingUser.role !== selectedRole && existingUser.role !== 'admin') {
+            const roleMismatch = `This account is registered as a "${existingUser.role}", not as "${selectedRole}". Please select the ${existingUser.role} tab.`;
+            setErrorMessage(roleMismatch);
+            showToast('error', 'Invalid role for this account', `هذا الحساب مسجل برتبة ${existingUser.role}`);
+            return;
+          }
+
           await registerOrLoginUser(existingUser);
           showToast('success', `Welcome back, ${existingUser.name}!`, `مرحباً بعودتك، ${existingUser.name}!`);
           navigate('/dashboard');
           return;
+        } else {
+          // Password mismatch
+          setErrorMessage('Invalid credentials. The password you entered is incorrect.');
+          showToast('error', 'Invalid credentials', 'بيانات الدخول غير صحيحة');
+          return;
         }
       }
 
-      // 3. Fallback check for default system accounts (teacher/teacher, coordinator/coordinator, student/student)
-      if (
-        (cleanLower === 'teacher' && cleanPassword === 'teacher') ||
-        (cleanLower === 'coordinator' && cleanPassword === 'coordinator') ||
-        (cleanLower === 'student' && cleanPassword === 'student')
-      ) {
-        const roleUser: UserType = {
-          id: cleanLower,
-          username: cleanLower,
-          password: cleanPassword,
-          name:
-            cleanLower === 'teacher'
-              ? 'Sarah Johnson'
-              : cleanLower === 'coordinator'
-              ? 'Academic Coordinator'
-              : 'Ahmed Hassan',
-          role: cleanLower as Role,
-          groupName: cleanLower === 'student' ? 'Group A - Beginners' : ''
-        };
-        await registerOrLoginUser(roleUser);
-        showToast('success', `Welcome back, ${roleUser.name}!`, `مرحباً بعودتك، ${roleUser.name}!`);
-        navigate('/dashboard');
-        return;
-      }
-
-      // 4. Otherwise, show Invalid credentials
+      // 3. User does NOT exist in real database: Reject with invalid credentials
+      setErrorMessage('Invalid credentials. Account does not exist in the system.');
       showToast('error', 'Invalid credentials', 'بيانات الدخول غير صحيحة');
     } catch (err) {
       console.error('Login error:', err);
+      setErrorMessage('Invalid credentials or system connection error.');
       showToast('error', 'Invalid credentials', 'بيانات الدخول غير صحيحة');
     } finally {
       setLoading(false);
@@ -133,7 +129,10 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
             <button
               key={role}
               type="button"
-              onClick={() => setSelectedRole(role)}
+              onClick={() => {
+                setSelectedRole(role);
+                setErrorMessage(null);
+              }}
               className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold capitalize transition-all ${
                 selectedRole === role
                   ? 'bg-[#584ee4] text-white shadow-md'
@@ -144,6 +143,17 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
             </button>
           ))}
         </div>
+
+        {/* Inline Error Message Banner */}
+        {errorMessage && (
+          <div className="mb-5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+            <div className="flex-1 leading-snug">
+              <p>{errorMessage}</p>
+              <p className="text-[11px] text-rose-500 font-semibold mt-0.5" dir="rtl">بيانات الدخول غير صحيحة أو الحساب غير موجود في النظام</p>
+            </div>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -160,7 +170,10 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
               <input
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setErrorMessage(null);
+                }}
                 placeholder="Enter your username"
                 required
                 className="w-full bg-transparent text-slate-800 font-bold text-sm focus:outline-none placeholder:text-slate-400 placeholder:font-normal"
@@ -180,7 +193,10 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrorMessage(null);
+                }}
                 placeholder="Enter your password"
                 required
                 className="w-full bg-transparent text-slate-800 font-bold text-sm focus:outline-none placeholder:text-slate-400 placeholder:font-normal"

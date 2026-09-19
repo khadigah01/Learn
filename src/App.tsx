@@ -184,9 +184,9 @@ const AppContent: React.FC = () => {
           </div>
 
           <div className="text-xs text-slate-400 text-center md:text-right">
-            <p>© 2026 Learn Academy. All rights reserved.</p>
+            <p>Learn Academy — Open Educational Learning Platform</p>
             <p className="text-[11px] text-slate-500 mt-1">
-              Math • Arabic • English Interactive Platform • Firestore Backed
+              Math • Arabic • English Interactive Platform
             </p>
           </div>
         </div>

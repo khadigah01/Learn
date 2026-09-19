@@ -1,11 +1,11 @@
 {
-  "name": "react-example",
-  "private": true,
+  "name": "learn",
+  "private": false,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build && cp dist/index.html dist/200.html && cp dist/index.html dist/404.html",
+    "build": "vite build && node -e \"const fs=require('fs'); fs.cpSync('dist', 'docs', {recursive: true});\"",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"
