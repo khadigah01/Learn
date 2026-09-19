@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { ToastContainer } from './components/Toast';
@@ -31,13 +31,39 @@ const AppContent: React.FC = () => {
 
   const t = translations[language];
 
+  // Redirect /meeting/public or /meeting to homepage
+  useEffect(() => {
+    const p = currentPath.toLowerCase().replace(/\/+$/, '');
+    if (p === '/meeting/public' || p === '/meeting') {
+      navigate('/');
+    }
+  }, [currentPath, navigate]);
+
   const renderRoute = () => {
     const path = currentPath.toLowerCase();
+    const cleanPath = path.replace(/\/+$/, '');
 
-    // 1. Public Meeting routes (/meeting/public or /meeting/:meetingId)
+    // 1. Meeting routes
+    if (cleanPath === '/meeting/public' || cleanPath === '/meeting') {
+      return <Home />;
+    }
+
+    // /meeting/public/:meetingId -> "join meeting on external website (no login)"
+    if (path.startsWith('/meeting/public/')) {
+      const meetingId = path.substring('/meeting/public/'.length).replace(/^\/+|\/+$/g, '');
+      if (!meetingId) {
+        return <Home />;
+      }
+      return <PublicMeetingPage meetingId={meetingId} isPublicMeetingRoute={true} />;
+    }
+
+    // /meeting/:meetingId -> "join meeting on external website"
     if (path.startsWith('/meeting/')) {
-      const meetingId = path.replace('/meeting/', '');
-      return <PublicMeetingPage meetingId={meetingId} />;
+      const meetingId = path.substring('/meeting/'.length).replace(/^\/+|\/+$/g, '');
+      if (!meetingId || meetingId === 'public') {
+        return <Home />;
+      }
+      return <PublicMeetingPage meetingId={meetingId} isPublicMeetingRoute={false} />;
     }
 
     // 2. Login Routes

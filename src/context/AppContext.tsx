@@ -146,9 +146,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return route;
       }
     }
-    if (rawPath.includes('/meeting/')) {
-      const idx = rawPath.indexOf('/meeting/');
-      return rawPath.substring(idx);
+    if (rawPath.includes('/meeting')) {
+      const idx = rawPath.indexOf('/meeting');
+      const mPath = rawPath.substring(idx);
+      // Clean trailing slashes
+      const trimmed = mPath.replace(/\/+$/, '');
+      if (trimmed === '/meeting' || trimmed === '/meeting/public') {
+        return '/';
+      }
+      return mPath;
     }
     return rawPath;
   };

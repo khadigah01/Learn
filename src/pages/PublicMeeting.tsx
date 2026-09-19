@@ -1,204 +1,238 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { LiveMeeting } from '../types';
-import { LiveMeetingRoom } from '../components/LiveMeetingRoom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Video, Sparkles, GraduationCap, ArrowRight, ShieldCheck, Play, Lock } from 'lucide-react';
+import {
+  Video,
+  ExternalLink,
+  Copy,
+  Check,
+  ShieldCheck,
+  Calendar,
+  Clock,
+  User,
+  BookOpen,
+  ArrowLeft,
+  Sparkles
+} from 'lucide-react';
 
 interface Props {
-  meetingId?: string;
+  meetingId: string;
+  isPublicMeetingRoute?: boolean; // true for /meeting/public/:meetingId, false for /meeting/:meetingId
 }
 
-export const PublicMeetingPage: React.FC<Props> = ({ meetingId }) => {
-  const { language, meetings, currentUser, showToast, navigate } = useApp();
+export const PublicMeetingPage: React.FC<Props> = ({ meetingId, isPublicMeetingRoute = false }) => {
+  const { language, meetings, showToast, navigate } = useApp();
   const [meeting, setMeeting] = useState<LiveMeeting | null>(null);
-  const [loading, setLoading] = useState<boolean>(!!meetingId);
-  const [inputMeetingId, setInputMeetingId] = useState<string>('');
-  const [guestName, setGuestName] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [copied, setCopied] = useState<boolean>(false);
+
+  const cleanId = (meetingId || '').trim();
 
   useEffect(() => {
-    if (meetingId && meetingId !== 'public') {
-      const foundInState = meetings.find((m) => m.id === meetingId);
-      if (foundInState) {
-        setMeeting(foundInState);
-        setLoading(false);
-      } else {
-        // Fetch from Firestore directly by ID
-        setLoading(true);
-        getDoc(doc(db, 'meetings', meetingId))
-          .then((snap) => {
-            if (snap.exists()) {
-              setMeeting({ id: snap.id, ...snap.data() } as LiveMeeting);
-            } else {
-              showToast('error', 'Meeting not found on Firestore', 'لم يتم العثور على الاجتماع في قاعدة البيانات');
-            }
-          })
-          .catch((err) => {
-            console.error('Error fetching meeting from Firestore:', err);
-          })
-          .finally(() => setLoading(false));
-      }
-    } else {
-      setMeeting(null);
-      setLoading(false);
+    if (!cleanId || cleanId === 'public') {
+      navigate('/');
+      return;
     }
-  }, [meetingId, meetings]);
 
-  const handleJoinById = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMeetingId.trim()) return;
+    // Try finding in current state first
+    const found = meetings.find((m) => m.id.toLowerCase() === cleanId.toLowerCase());
+    if (found) {
+      setMeeting(found);
+      setLoading(false);
+      return;
+    }
 
-    const cleanId = inputMeetingId.trim();
-    navigate(`/meeting/${cleanId}`);
-  };
-
-  const createInstantPublicMeeting = () => {
-    const instantId = 'public_' + Date.now().toString().slice(-6);
-    const mockPublicMeeting: LiveMeeting = {
-      id: instantId,
-      title: 'Public Open Live Class Room',
-      subject: 'General',
-      teacherId: 'guest_teacher',
-      teacherName: guestName.trim() || 'Guest Educator',
-      assignedStudentIds: ['public_guest_1', 'public_guest_2'],
-      startTime: 'Live Now',
-      durationMinutes: 60,
-      link: `/meeting/${instantId}`,
-      status: 'live',
-      isTeacherInRoom: true,
-      isPublic: true
-    };
-    setMeeting(mockPublicMeeting);
-  };
-
-  if (meeting) {
-    return (
-      <LiveMeetingRoom
-        meeting={meeting}
-        onClose={() => {
+    // Otherwise look up directly in Firestore
+    setLoading(true);
+    getDoc(doc(db, 'meetings', cleanId))
+      .then((snap) => {
+        if (snap.exists()) {
+          setMeeting({ id: snap.id, ...snap.data() } as LiveMeeting);
+        } else {
+          // Meeting ID is custom/external
           setMeeting(null);
-          navigate('/meeting/public');
-        }}
-      />
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching meeting:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [cleanId, meetings, navigate]);
+
+  // Determine external meeting URL
+  const externalMeetingUrl =
+    meeting?.link && meeting.link.startsWith('http')
+      ? meeting.link
+      : `https://meet.jit.si/LearnAcademy_${encodeURIComponent(cleanId)}`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(externalMeetingUrl);
+    setCopied(true);
+    showToast(
+      'success',
+      'Meeting link copied to clipboard',
+      'تم نسخ رابط الاجتماع إلى الحافظة'
     );
-  }
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleJoinExternal = () => {
+    window.open(externalMeetingUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  // Exact phrases specified by the user:
+  // /meeting/public/meetingID -> "join meeting on external website (no login)"
+  // /meeting/meetingID -> "join meeting on external website"
+  const mainHeading = isPublicMeetingRoute
+    ? (language === 'ar' ? 'الانضمام إلى الاجتماع على موقع خارجي (بدون تسجيل دخول)' : 'join meeting on external website (no login)')
+    : (language === 'ar' ? 'الانضمام إلى الاجتماع على موقع خارجي' : 'join meeting on external website');
+
+  const buttonLabel = isPublicMeetingRoute
+    ? (language === 'ar' ? 'الانضمام إلى الاجتماع على موقع خارجي (بدون تسجيل دخول)' : 'join meeting on external website (no login)')
+    : (language === 'ar' ? 'الانضمام إلى الاجتماع على موقع خارجي' : 'join meeting on external website');
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 space-y-8 animate-in fade-in duration-300">
-      <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 rounded-[2.5rem] p-8 sm:p-12 text-white shadow-2xl border border-white/10 glow-card relative overflow-hidden">
+    <div className="max-w-3xl mx-auto px-4 py-12 animate-in fade-in duration-300">
+      <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 rounded-3xl p-6 sm:p-10 text-white shadow-2xl border border-white/10 glow-card relative overflow-hidden">
         
-        {/* Header */}
-        <div className="relative z-10 text-center space-y-4 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span>Public Open Access • No Login Required</span>
-          </div>
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-            {language === 'ar' ? 'الانضمام لاجتماع مباشر مفتوح' : 'Join a Public Live Meeting'}
-          </h1>
-          <p className="text-sm text-purple-200 leading-relaxed">
-            {language === 'ar'
-              ? 'أدخل رمز الاجتماع المخزن في Firestore للانضمام مباشرة دون الحاجة لتسجيل الدخول.'
-              : 'Enter any meeting ID stored on Firestore to join live video, chat, and whiteboard instantly without signing in.'}
-          </p>
-        </div>
-
-        {/* Join Form */}
-        <div className="mt-8 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="relative z-10 space-y-6 text-center">
           
-          {/* Card 1: Enter Meeting ID */}
-          <div className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 space-y-4">
-            <div className="flex items-center gap-3 text-amber-300 font-bold">
-              <Video className="w-6 h-6" />
-              <h3>{language === 'ar' ? 'الانضمام عبر معرف الاجتماع' : 'Join via Meeting ID'}</h3>
-            </div>
-
-            <form onSubmit={handleJoinById} className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-purple-200 mb-1">
-                  Firestore Meeting ID
-                </label>
-                <input
-                  type="text"
-                  value={inputMeetingId}
-                  onChange={(e) => setInputMeetingId(e.target.value)}
-                  placeholder="e.g. meet_172674823"
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-purple-400/40 text-white placeholder-slate-400 text-sm font-semibold focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-xl flex items-center justify-center gap-2 transition-all glow-btn"
-              >
-                <span>{language === 'ar' ? 'انضمام الآن' : 'Join Meeting Now'}</span>
-                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
-              </button>
-            </form>
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/20 text-purple-200 border border-purple-400/30 text-xs font-bold">
+            <Video className="w-4 h-4 text-amber-400" />
+            <span>
+              {isPublicMeetingRoute
+                ? (language === 'ar' ? 'اجتماع خارجي مباشر • بدون تسجيل دخول' : 'External Live Meeting • No Login Required')
+                : (language === 'ar' ? 'اجتماع خارجي مباشر' : 'External Live Meeting')}
+            </span>
           </div>
 
-          {/* Card 2: Instant Guest Room */}
-          <div className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 space-y-4">
-            <div className="flex items-center gap-3 text-emerald-300 font-bold">
-              <Play className="w-6 h-6" />
-              <h3>{language === 'ar' ? 'غرفة حية فورية للزوار' : 'Instant Public Live Stream'}</h3>
+          {/* Main User Requested Heading */}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-snug capitalize">
+            {mainHeading}
+          </h1>
+
+          <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
+            {isPublicMeetingRoute
+              ? (language === 'ar'
+                  ? 'يمكنك الانضمام مباشرة إلى جلسة الفيديو الحية على المنصة الخارجية كزائر دون الحاجة لتسجيل حساب أو إدخال كلمة مرور.'
+                  : 'You can connect directly to this live video session on the external meeting platform as a guest. No login, password, or account is needed.')
+              : (language === 'ar'
+                  ? 'اضغط أدناه للانتقال إلى منصة الاجتماعات الخارجية وبدء حصتك المباشرة.'
+                  : 'Click below to connect to your live video session on the external meeting platform.')}
+          </p>
+
+          {/* Meeting Info Card */}
+          <div className="bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-6 text-start max-w-xl mx-auto space-y-4 shadow-inner">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <span className="text-xs font-bold uppercase tracking-wider text-purple-300">
+                {language === 'ar' ? 'معرّف الاجتماع' : 'Meeting ID'}
+              </span>
+              <span className="font-mono text-sm sm:text-base font-extrabold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-lg border border-amber-400/30">
+                {cleanId}
+              </span>
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-purple-200 mb-1">
-                  Your Name / Display Name
-                </label>
+            {loading ? (
+              <div className="py-4 text-center text-xs text-slate-400 animate-pulse">
+                {language === 'ar' ? 'جاري التحقق من بيانات الاجتماع...' : 'Checking meeting details...'}
+              </div>
+            ) : meeting ? (
+              <div className="space-y-2 text-sm text-slate-200">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-purple-400" />
+                  <span className="font-semibold text-white">{meeting.title}</span>
+                  <span className="text-xs text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full">
+                    {meeting.subject}
+                  </span>
+                </div>
+                {meeting.teacherName && (
+                  <div className="flex items-center gap-2 text-xs text-slate-300">
+                    <User className="w-4 h-4 text-emerald-400" />
+                    <span>{language === 'ar' ? 'المعلم:' : 'Teacher:'} {meeting.teacherName}</span>
+                  </div>
+                )}
+                {meeting.startTime && (
+                  <div className="flex items-center gap-2 text-xs text-slate-300">
+                    <Calendar className="w-4 h-4 text-blue-400" />
+                    <span>{language === 'ar' ? 'الموعد:' : 'Time:'} {meeting.startTime}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-emerald-300 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
+                <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-400" />
+                <span>
+                  {language === 'ar'
+                    ? 'غرفة اجتماعات خارجية مخصصة ومحمية جاهزة للاتصال الفوري.'
+                    : 'Secure external meeting room ready for instant connection.'}
+                </span>
+              </div>
+            )}
+
+            {/* External URL Display & Copy */}
+            <div className="pt-2">
+              <label className="block text-[11px] font-bold text-slate-400 mb-1.5">
+                {language === 'ar' ? 'رابط المنصة الخارجية:' : 'External Platform Link:'}
+              </label>
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="e.g. Guest Student"
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-purple-400/40 text-white placeholder-slate-400 text-sm font-semibold focus:outline-none focus:border-emerald-400"
+                  readOnly
+                  value={externalMeetingUrl}
+                  className="flex-1 px-3 py-2 text-xs bg-black/40 border border-white/10 rounded-xl text-slate-300 font-mono truncate focus:outline-none"
                 />
+                <button
+                  onClick={handleCopyLink}
+                  title="Copy link"
+                  className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 transition-colors border border-white/10"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? (language === 'ar' ? 'تم النسخ' : 'Copied') : (language === 'ar' ? 'نسخ' : 'Copy')}</span>
+                </button>
               </div>
-
-              <button
-                onClick={createInstantPublicMeeting}
-                className="w-full py-3.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-sm shadow-xl flex items-center justify-center gap-2 transition-all glow-btn"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>{language === 'ar' ? 'بدء جلسة حية مفتوحة' : 'Launch Open Public Room'}</span>
-              </button>
             </div>
           </div>
+
+          {/* Action Buttons */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+            <button
+              onClick={handleJoinExternal}
+              className="w-full sm:flex-1 py-4 px-6 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm sm:text-base shadow-xl flex items-center justify-center gap-2.5 transition-all glow-btn capitalize"
+            >
+              <span>{buttonLabel}</span>
+              <ExternalLink className="w-5 h-5 shrink-0" />
+            </button>
+
+            <button
+              onClick={() => navigate('/')}
+              className="w-full sm:w-auto py-4 px-6 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 border border-white/10"
+            >
+              <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+              <span>{language === 'ar' ? 'الرئيسية' : 'Homepage'}</span>
+            </button>
+          </div>
+
+          {/* Trust notice */}
+          <p className="text-[11px] text-slate-400 pt-2">
+            {isPublicMeetingRoute
+              ? (language === 'ar'
+                  ? 'لا يتطلب هذا الرابط أي تسجيل دخول في المنصة. سيتم فتح منصة الاجتماع الخارجية في نافذة جديدة.'
+                  : 'This link requires no login on this platform. The external meeting service will open in a new tab.')
+              : (language === 'ar'
+                  ? 'سيتم فتح منصة الاجتماع الخارجية في نافذة جديدة.'
+                  : 'The external meeting platform will open in a new tab.')}
+          </p>
 
         </div>
-
-        {/* Public Meetings List from Firestore */}
-        {meetings.filter((m) => m.isPublic || m.status === 'live').length > 0 && (
-          <div className="mt-8 pt-6 border-t border-white/10 relative z-10 space-y-3">
-            <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-              {language === 'ar' ? 'الاجتماعات المباشرة القائمة في Firestore:' : 'Live Public Meetings on Firestore:'}
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {meetings.map((m) => (
-                <div
-                  key={m.id}
-                  onClick={() => navigate(`/meeting/${m.id}`)}
-                  className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 hover:border-amber-400 cursor-pointer transition-all flex items-center justify-between group"
-                >
-                  <div>
-                    <h5 className="text-sm font-bold text-white group-hover:text-amber-300">{m.title}</h5>
-                    <p className="text-xs text-slate-400">{m.subject} • Host: {m.teacherName}</p>
-                    <span className="text-[10px] text-purple-300 font-mono">ID: {m.id}</span>
-                  </div>
-                  <div className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
-                    Join
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
       </div>
     </div>
   );
