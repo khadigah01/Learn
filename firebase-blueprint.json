@@ -1,0 +1,130 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Academy user account (student, teacher, coordinator, admin)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher", "coordinator", "admin"] },
+        "username": { "type": "string" },
+        "avatar": { "type": "string" },
+        "email": { "type": "string" },
+        "groupName": { "type": "string" },
+        "levelMath": { "type": "string" },
+        "levelArabic": { "type": "string" },
+        "levelEnglish": { "type": "string" },
+        "scoreMath": { "type": "number" },
+        "scoreArabic": { "type": "number" },
+        "scoreEnglish": { "type": "number" }
+      },
+      "required": ["id", "name", "role", "username"]
+    },
+    "StudentGroup": {
+      "title": "Student Group",
+      "description": "Learning class/group assigned to students, teachers, and coordinators",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "subject": { "type": "string", "enum": ["Math", "Arabic", "English", "General"] },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "coordinatorId": { "type": "string" },
+        "coordinatorName": { "type": "string" },
+        "studentIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "schedule": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "name", "subject", "studentIds"]
+    },
+    "LiveMeeting": {
+      "title": "Live Meeting",
+      "description": "Interactive virtual classroom meeting session stored in Firestore",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "subject": { "type": "string", "enum": ["Math", "Arabic", "English", "General"] },
+        "groupId": { "type": "string" },
+        "groupName": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "assignedStudentIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "startTime": { "type": "string" },
+        "durationMinutes": { "type": "number" },
+        "link": { "type": "string" },
+        "status": { "type": "string", "enum": ["scheduled", "live", "ended"] },
+        "isTeacherInRoom": { "type": "boolean" },
+        "isPublic": { "type": "boolean" }
+      },
+      "required": ["id", "title", "subject", "teacherId", "assignedStudentIds", "status"]
+    },
+    "NotificationItem": {
+      "title": "Notification Item",
+      "description": "Alert or notification sent to students/teachers for meetings, groups, or tests",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "titleAr": { "type": "string" },
+        "message": { "type": "string" },
+        "messageAr": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "type": { "type": "string", "enum": ["meeting", "group", "test", "career", "general"] },
+        "meetingId": { "type": "string" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "userId", "title", "message", "read"]
+    },
+    "CareerApplication": {
+      "title": "Career Job Application",
+      "description": "Submitted application for open positions at Learn Academy",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "positionId": { "type": "string" },
+        "positionTitle": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "yearsExperience": { "type": "string" },
+        "resumeUrl": { "type": "string" },
+        "coverLetter": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Reviewed", "Accepted", "Rejected"] },
+        "appliedAt": { "type": "string" }
+      },
+      "required": ["id", "positionId", "fullName", "email", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile collection"
+    },
+    "/groups/{groupId}": {
+      "schema": "StudentGroup",
+      "description": "Student groups collection"
+    },
+    "/meetings/{meetingId}": {
+      "schema": "LiveMeeting",
+      "description": "Live meetings collection"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "NotificationItem",
+      "description": "Notifications collection"
+    },
+    "/careerApps/{appId}": {
+      "schema": "CareerApplication",
+      "description": "Career job applications collection"
+    }
+  }
+}

@@ -1,0 +1,224 @@
+@import "tailwindcss";
+
+:root {
+  --toastify-icon-color-error: #e74c3c;
+  --toastify-icon-color-success: #07bc0c;
+  --toastify-icon-color-info: #3498db;
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+  
+  body[dir="rtl"] {
+    font-family: 'Cairo', system-ui, sans-serif;
+  }
+}
+
+/* ==========================================================
+   Toastify Styling for Exact HTML Code Match
+   ========================================================== */
+.Toastify {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  pointer-events: none;
+}
+
+.Toastify__toast-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 440px;
+  padding: 0 16px;
+}
+
+.Toastify__toast {
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15), 0 0 15px rgba(139, 92, 246, 0.2);
+  border: 1px solid #e2e8f0;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 300px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  transition: all 0.25s ease;
+  animation: toastifyEnter 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.Toastify__toast:hover {
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.5), 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.Toastify__toast-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.Toastify__toast-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Toastify__close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.Toastify__close-button:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+  transform: scale(1.1);
+}
+
+.Toastify__close-button svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.Toastify__progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  transform-origin: left;
+  animation: toastifyTrack 5000ms linear forwards;
+}
+
+.Toastify__progress-bar--error {
+  background: var(--toastify-icon-color-error, #e74c3c);
+}
+
+.Toastify__progress-bar--success {
+  background: var(--toastify-icon-color-success, #07bc0c);
+}
+
+.Toastify__progress-bar--info {
+  background: var(--toastify-icon-color-info, #3498db);
+}
+
+@keyframes toastifyTrack {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes toastifyEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* ==========================================================
+   ULTRA GLOW ON HOVER FOR EVERYTHING
+   ========================================================== */
+
+/* Universal hover glow for buttons, links, inputs, cards, containers */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+.glow-btn,
+.glow-card,
+.glow-element,
+.glow-input {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Hover glow for ALL buttons */
+button:hover,
+a.btn:hover,
+.glow-btn:hover {
+  box-shadow: 0 0 25px rgba(147, 51, 234, 0.75), 0 0 12px rgba(251, 191, 36, 0.6) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+/* Hover glow for cards and containers */
+.glow-card:hover,
+.bg-white:hover,
+.bg-indigo-50:hover,
+.bg-purple-50:hover,
+.bg-amber-50:hover {
+  box-shadow: 0 12px 35px -5px rgba(124, 58, 237, 0.35), 0 0 25px rgba(167, 139, 250, 0.4) !important;
+}
+
+/* Hover & Focus glow for Inputs and Selects */
+input:hover,
+select:hover,
+textarea:hover,
+input:focus,
+select:focus,
+textarea:focus,
+.glow-input:hover,
+.glow-input:focus {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5), 0 0 8px rgba(236, 72, 153, 0.4) !important;
+  border-color: #8b5cf6 !important;
+}
+
+/* Table rows glow on hover */
+tr:hover {
+  background-color: rgba(243, 232, 255, 0.6) !important;
+  box-shadow: inset 0 0 15px rgba(167, 139, 250, 0.3) !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.8);
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.8);
+}

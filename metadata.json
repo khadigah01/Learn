@@ -1,0 +1,6 @@
+{
+  "name": "Learn",
+  "description": "Learn Academy - Interactive learning platform for Math, Arabic, and English with level tests, educational games, and live meetings.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

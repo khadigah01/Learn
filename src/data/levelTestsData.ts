@@ -1,0 +1,130 @@
+import { TestQuestion } from '../types';
+
+export const mathQuestions: TestQuestion[] = [
+  {
+    id: 1,
+    questionEn: 'What is 15 + 27?',
+    questionAr: 'ما هو حاصل جمع 15 + 27؟',
+    optionsEn: ['38', '42', '45', '52'],
+    optionsAr: ['38', '42', '45', '52'],
+    correctIndex: 1,
+  },
+  {
+    id: 2,
+    questionEn: 'Solve for x: 3x - 5 = 16',
+    questionAr: 'حل المعادلة: 3س - 5 = 16',
+    optionsEn: ['x = 5', 'x = 6', 'x = 7', 'x = 8'],
+    optionsAr: ['س = 5', 'س = 6', 'س = 7', 'س = 8'],
+    correctIndex: 2,
+  },
+  {
+    id: 3,
+    questionEn: 'What is the area of a rectangle with length 8cm and width 5cm?',
+    questionAr: 'ما هي مساحة مستطيل طوله 8 سم وعرضه 5 سم؟',
+    optionsEn: ['13 cm²', '26 cm²', '40 cm²', '45 cm²'],
+    optionsAr: ['13 سم²', '26 سم²', '40 سم²', '45 سم²'],
+    correctIndex: 2,
+  },
+  {
+    id: 4,
+    questionEn: 'What is 25% of 200?',
+    questionAr: 'ما هي قيمة 25% من العدد 200؟',
+    optionsEn: ['25', '40', '50', '75'],
+    optionsAr: ['25', '40', '50', '75'],
+    correctIndex: 2,
+  },
+  {
+    id: 5,
+    questionEn: 'If a triangle has angles 50° and 60°, what is the third angle?',
+    questionAr: 'إذا كانت قياسات زاويتين في مثلث هما 50° و 60°، فما قياس الزاوية الثالثة؟',
+    optionsEn: ['70°', '80°', '90°', '100°'],
+    optionsAr: ['70°', '80°', '90°', '100°'],
+    correctIndex: 0,
+  },
+];
+
+export const arabicQuestions: TestQuestion[] = [
+  {
+    id: 1,
+    questionEn: 'Choose the correct word: "الجملة الفعلية تبدأ بـ ..."',
+    questionAr: 'اختر الإجابة الصحيحة: الجملة الفعلية تبدأ بـ ...',
+    optionsEn: ['اسم (Noun)', 'فعل (Verb)', 'حرف (Preposition)', 'ظرف (Adverb)'],
+    optionsAr: ['اسم', 'فعل', 'حرف', 'ظرف'],
+    correctIndex: 1,
+  },
+  {
+    id: 2,
+    questionEn: 'What is the plural (جمع) of the word "كتاب" (Book)?',
+    questionAr: 'ما جمع كلمة "كتاب"؟',
+    optionsEn: ['كاتب', 'مكتبة', 'كتب', 'كتيب'],
+    optionsAr: ['كاتب', 'مكتبة', 'كتب', 'كتيب'],
+    correctIndex: 2,
+  },
+  {
+    id: 3,
+    questionEn: 'Identify the mark of Nominative case (علامة الرفع الأصلية) for singular nouns:',
+    questionAr: 'ما هي علامة الرفع الأصلية للاسم المفرد؟',
+    optionsEn: ['الفتحة', 'الضمة', 'الكسرة', 'السكون'],
+    optionsAr: ['الفتحة', 'الضمة', 'الكسرة', 'السكون'],
+    correctIndex: 1,
+  },
+  {
+    id: 4,
+    questionEn: 'Select the synonym (مرادف) of "شجاع" (Brave):',
+    questionAr: 'ما مرادف كلمة "شجاع"؟',
+    optionsEn: ['جبان', 'مقدام', 'ضعيف', 'صغير'],
+    optionsAr: ['جبان', 'مقدام', 'ضعيف', 'صغير'],
+    correctIndex: 1,
+  },
+  {
+    id: 5,
+    questionEn: 'Complete the sentence: "الطالبان ... في دراستهما"',
+    questionAr: 'أكمل الجملة بما يناسبها: "الطالبان ... في دراستهما"',
+    optionsEn: ['مجتهد', 'مجتهدون', 'مجتهدان', 'مجتهدات'],
+    optionsAr: ['مجتهد', 'مجتهدون', 'مجتهدان', 'مجتهدات'],
+    correctIndex: 2,
+  },
+];
+
+export const englishQuestions: TestQuestion[] = [
+  {
+    id: 1,
+    questionEn: 'Select the correct verb form: "She ______ to school every morning."',
+    questionAr: 'اختر الصيغة الصحيحة للفعل: "She ______ to school every morning."',
+    optionsEn: ['go', 'goes', 'going', 'gone'],
+    optionsAr: ['go', 'goes', 'going', 'gone'],
+    correctIndex: 1,
+  },
+  {
+    id: 2,
+    questionEn: 'What is the antonym (opposite) of "Generous"?',
+    questionAr: 'ما هو عكس كلمة "Generous" (كريم)؟',
+    optionsEn: ['Kind', 'Mean / Stingy', 'Happy', 'Brave'],
+    optionsAr: ['Kind', 'Mean / Stingy', 'Happy', 'Brave'],
+    correctIndex: 1,
+  },
+  {
+    id: 3,
+    questionEn: 'Choose the correct preposition: "The book is ______ the table."',
+    questionAr: 'اختر حرف الجر الصحيح: "The book is ______ the table."',
+    optionsEn: ['on', 'in', 'at', 'into'],
+    optionsAr: ['on', 'in', 'at', 'into'],
+    correctIndex: 0,
+  },
+  {
+    id: 4,
+    questionEn: 'Identify the past continuous tense:',
+    questionAr: 'حدد الزمن الماضي المستمر (Past Continuous):',
+    optionsEn: ['I am reading a book', 'I read a book yesterday', 'I was reading a book when he arrived', 'I will read a book'],
+    optionsAr: ['I am reading a book', 'I read a book yesterday', 'I was reading a book when he arrived', 'I will read a book'],
+    correctIndex: 2,
+  },
+  {
+    id: 5,
+    questionEn: 'Select the correctly spelled word:',
+    questionAr: 'اختر الكلمة المكتوبة بالهجاء الصحيح:',
+    optionsEn: ['Acheive', 'Achieve', 'Achive', 'Acheev'],
+    optionsAr: ['Acheive', 'Achieve', 'Achive', 'Acheev'],
+    correctIndex: 1,
+  },
+];
