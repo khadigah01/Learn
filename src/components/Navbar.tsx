@@ -189,27 +189,6 @@ export const Navbar: React.FC = () => {
     },
     {
       category: 'interactive',
-      titleEn: 'Join Meeting on External Website (No Login)',
-      titleAr: 'الانضمام لاجتماع على موقع خارجي (بدون تسجيل دخول)',
-      descEn: 'Connect to live video meetings on external platform with no login required',
-      descAr: 'اتصال مباشر بحصص الفيديو على منصة خارجية دون الحاجة لتسجيل الدخول',
-      route: '/meeting/public/:id',
-      icon: Video,
-      badge: 'External Video',
-      action: () => {
-        const enteredId = prompt(
-          language === 'ar'
-            ? 'أدخل معرّف الاجتماع للانضمام على موقع خارجي (بدون تسجيل دخول):'
-            : 'Enter Meeting ID to join on external website (no login):',
-          'live_session'
-        );
-        if (enteredId && enteredId.trim()) {
-          handleNav(`/meeting/public/${encodeURIComponent(enteredId.trim())}`);
-        }
-      }
-    },
-    {
-      category: 'interactive',
       titleEn: 'Math Diagnostic Test',
       titleAr: 'اختبار تحديد مستوى الرياضيات',
       descEn: '10 adaptive questions to determine student mathematical level',
@@ -492,28 +471,6 @@ export const Navbar: React.FC = () => {
           >
             <Gamepad2 className="w-3.5 h-3.5" />
             {t.games}
-          </button>
-
-          <button
-            onClick={() => {
-              const enteredId = prompt(
-                language === 'ar'
-                  ? 'أدخل معرّف الاجتماع للانضمام على موقع خارجي (بدون تسجيل دخول):'
-                  : 'Enter Meeting ID to join on external website (no login):',
-                'live_class'
-              );
-              if (enteredId && enteredId.trim()) {
-                handleNav(`/meeting/public/${encodeURIComponent(enteredId.trim())}`);
-              }
-            }}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
-              currentPath.startsWith('/meeting')
-                ? 'bg-purple-500 text-white shadow'
-                : 'text-purple-200 hover:bg-purple-500/20 hover:text-white'
-            }`}
-          >
-            <Video className="w-3.5 h-3.5" />
-            <span>{language === 'ar' ? 'اجتماع خارجي' : 'External Meeting'}</span>
           </button>
 
           <button
