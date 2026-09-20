@@ -86,12 +86,13 @@ export const LoginChoice: React.FC = () => {
       <div className="w-full max-w-[440px] bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in-95 duration-300">
         
         {/* Top Floating White Badge with Learn Academy Logo */}
-        <div className="w-24 h-24 mx-auto mb-5 rounded-full bg-white shadow-xl flex items-center justify-center border border-slate-100 p-2.5">
-          <div className="w-full h-full rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-400 p-1 flex items-center justify-center shadow-md">
-            <div className="w-full h-full bg-white rounded-full flex items-center justify-center text-[#584ee4]">
-              <GraduationCap className="w-10 h-10 text-[#584ee4]" />
-            </div>
-          </div>
+        <div className="w-24 h-24 mx-auto mb-5 rounded-full bg-white shadow-xl flex items-center justify-center border border-slate-100 p-1.5 overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="Learn Academy"
+            className="w-full h-full object-contain rounded-full shadow-inner"
+            referrerPolicy="no-referrer"
+          />
         </div>
 
         {/* Header Title - Prominently says /login and NOT student login, without role switcher */}

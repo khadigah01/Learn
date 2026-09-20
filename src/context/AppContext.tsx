@@ -67,6 +67,17 @@ interface AppContextType {
   replyToInquiry: (id: string, replyText: string, replierName: string) => Promise<void>;
   deleteInquiry: (id: string) => Promise<void>;
 
+  // Email Notification Forwarder (Resend)
+  forwardEmailNotification: (payload: {
+    type: string;
+    subject: string;
+    senderName: string;
+    senderEmail?: string;
+    senderPhone?: string;
+    content: string;
+    details?: Record<string, any>;
+  }) => Promise<{ success: boolean; delivered?: boolean; note?: string; error?: string }>;
+
   // Programs / Curriculum CRUD (Admin)
   createProgram: (prog: Omit<ProgramItem, 'id'>) => Promise<void>;
   updateProgram: (prog: ProgramItem) => Promise<void>;
@@ -573,6 +584,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const forwardEmailNotification = async (payload: {
+    type: string;
+    subject: string;
+    senderName: string;
+    senderEmail?: string;
+    senderPhone?: string;
+    content: string;
+    details?: Record<string, any>;
+  }) => {
+    try {
+      const res = await fetch('/api/forward-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      return data;
+    } catch (err: any) {
+      console.warn('[Resend Forwarder] Error:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
   const submitCareerApp = async (appData: Omit<CareerApplication, 'id' | 'appliedAt' | 'status'>) => {
     const appId = 'app_' + Date.now();
     const newApp: CareerApplication = {
@@ -585,6 +619,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       await setDoc(doc(db, 'careerApps', appId), cleanFirestoreData(newApp));
       showToast('success', 'Career Application submitted!', 'تم تقديم طلب الوظيفة بنجاح!');
+
+      // Forward notification via Resend to admin team emails
+      forwardEmailNotification({
+        type: 'Career Application',
+        subject: `Job Application: ${appData.positionTitle} from ${appData.fullName}`,
+        senderName: appData.fullName,
+        senderEmail: appData.email,
+        senderPhone: appData.phone,
+        content: `Applied for: ${appData.positionTitle}\nExperience: ${appData.yearsExperience || 'N/A'}\nCover Letter: ${appData.coverLetter || 'None'}`,
+        details: {
+          'Position': appData.positionTitle,
+          'Applicant': appData.fullName,
+          'Email': appData.email,
+          'Phone': appData.phone,
+          'Years Experience': appData.yearsExperience || 'Not specified'
+        }
+      });
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `careerApps/${appId}`);
     }
@@ -607,6 +658,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         'Your message has been sent! Academic team has been notified.',
         'تم إرسال رسالتك بنجاح! تم إشعار فريق الأكاديمية للمتابعة.'
       );
+
+      // Forward notification via Resend to admin team emails
+      forwardEmailNotification({
+        type: `Inquiry (${data.channel || 'general'})`,
+        subject: `Inquiry: ${data.subject || 'Academic Message'} from ${data.senderName || 'Anonymous'}`,
+        senderName: data.senderName || 'Anonymous',
+        senderEmail: undefined,
+        senderPhone: data.senderPhone,
+        content: data.content,
+        details: {
+          'Channel': data.channel,
+          'Sender Role': data.senderRole,
+          'Phone': data.senderPhone || 'Not provided',
+          'Date/Time': data.timestamp
+        }
+      });
+
       return inqId;
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `inquiries/${inqId}`);
@@ -785,6 +853,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         submitInquiry,
         replyToInquiry,
         deleteInquiry,
+        forwardEmailNotification,
         createProgram,
         updateProgram,
         deleteProgram,

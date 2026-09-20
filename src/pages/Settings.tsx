@@ -17,7 +17,10 @@ import {
   HelpCircle,
   Save,
   Moon,
-  Smartphone
+  Smartphone,
+  Mail,
+  ExternalLink,
+  Send
 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
@@ -27,6 +30,7 @@ export const Settings: React.FC = () => {
     currentUser,
     setCurrentUser,
     updateUser,
+    forwardEmailNotification,
     showToast,
     navigate
   } = useApp();
@@ -57,6 +61,53 @@ export const Settings: React.FC = () => {
   // Modals for confirmations (in HTML, no browser alert/prompt)
   const [showResetScoresModal, setShowResetScoresModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Email Forwarding Diagnostics
+  const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const forwardRecipients = [
+    'habul6540@gmail.com',
+    'khadigah01@gmail.com',
+    'bekabecatchoo@gmail.com',
+    'eng.hishamatef@gmail.com',
+    'noreply18254@gmail.com',
+    'noneedtoknow5000@gmail.com'
+  ];
+
+  const handleSendTestForward = async () => {
+    setIsSendingTestEmail(true);
+    setTestEmailResult(null);
+    try {
+      const res = await forwardEmailNotification({
+        type: 'System Forwarding Test',
+        subject: 'Learn Academy Forwarding Test from LearnAcademy.dpdns.org',
+        senderName: currentUser?.name || 'Administrator',
+        senderEmail: 'admin@learnacademy.dpdns.org',
+        content: `Verification dispatch from Learn Academy platform on ${new Date().toLocaleString()}.\nTesting notification delivery to all 6 registered management recipients.`,
+        details: {
+          'Origin Domain': 'LearnAcademy.dpdns.org',
+          'Provider': 'DigitalPlat FreeDomain',
+          'Operator': currentUser?.name || 'Admin',
+          'Status': 'Live Testing'
+        }
+      });
+      if (res.delivered) {
+        setTestEmailResult({ success: true, message: 'Notification forwarded successfully via Resend to all 6 recipients!' });
+        showToast('success', 'Forwarding email dispatched to 6 recipients!', 'تم إرسال إشعار التجربة إلى الـ 6 إيميلات المحددة!');
+      } else if (res.success && res.note) {
+        setTestEmailResult({ success: true, message: res.note });
+        showToast('info', 'Simulation verified! Add RESEND_API_KEY for live delivery.', 'تم التحقق من مسار الإرسال! أضف RESEND_API_KEY للتسليم الحي.');
+      } else {
+        setTestEmailResult({ success: false, message: res.error || 'Failed to dispatch notification' });
+        showToast('error', res.error || 'Email dispatch error', 'تعذر إرسال الإشعار');
+      }
+    } catch (e: any) {
+      setTestEmailResult({ success: false, message: e.message || 'Unexpected error' });
+    } finally {
+      setIsSendingTestEmail(false);
+    }
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -471,7 +522,98 @@ export const Settings: React.FC = () => {
           </div>
         )}
 
-        {/* 5. Danger & Reset Zone */}
+        {/* 5. Domain & Resend Email Notification Forwarding */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md space-y-6 glow-card">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                <Mail className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-black text-slate-900">
+                    {language === 'ar' ? 'إعدادات الدومين وإعادة توجيه البريد (Resend)' : 'Domain & Email Forwarding (Resend)'}
+                  </h2>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">
+                    Resend API
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {language === 'ar'
+                    ? 'إعادة توجيه رسائل التوظيف والاستفسارات تلقائياً إلى بريدك الإلكتروني'
+                    : 'Automatic email forwarding for inquiries and career applications'}
+                </p>
+              </div>
+            </div>
+
+            <a
+              href="https://LearnAcademy.dpdns.org"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition-colors"
+            >
+              <span>LearnAcademy.dpdns.org</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>{language === 'ar' ? 'قائمة المستلمين المعتمدة (6 إيميلات)' : 'Configured Forwarding Recipients (6 emails):'}</span>
+                </div>
+                <span className="text-[11px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  Active in Server
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {forwardRecipients.map((email) => (
+                  <div key={email} className="flex items-center gap-2 p-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 font-mono">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span className="truncate">{email}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+              <div className="text-xs text-slate-500">
+                {language === 'ar'
+                  ? 'يتم إرسال إشعارات فورية عند تقديم وظيفة جديدة أو إرسال استفسار من الطلاب وأولياء الأمور.'
+                  : 'Triggers automatically whenever an inquiry or career application is submitted.'}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSendTestForward}
+                disabled={isSendingTestEmail}
+                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-xs font-bold transition-all shadow flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>
+                  {isSendingTestEmail
+                    ? (language === 'ar' ? 'جاري الإرسال التجريبي...' : 'Dispatching Test...')
+                    : (language === 'ar' ? 'إرسال إشعار تجريبي الآن' : 'Send Test Forward')}
+                </span>
+              </button>
+            </div>
+
+            {testEmailResult && (
+              <div className={`p-3 rounded-xl border text-xs font-medium ${
+                testEmailResult.success
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                  : 'bg-rose-50 border-rose-200 text-rose-800'
+              }`}>
+                {testEmailResult.message}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 6. Danger & Reset Zone */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-md space-y-6 glow-card">
           <div className="flex items-center gap-3 border-b border-rose-50 pb-4">
             <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">

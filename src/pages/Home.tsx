@@ -230,33 +230,47 @@ export const Home: React.FC = () => {
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a
-                href="https://learn-academy-platform.surge.sh"
+                href="https://LearnAcademy.dpdns.org"
                 target="_blank"
                 rel="noreferrer"
                 className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-xl flex items-center gap-2 transition-all glow-btn"
               >
-                <span>learn-academy-platform.surge.sh</span>
+                <Sparkles className="w-4 h-4 text-slate-950" />
+                <span>LearnAcademy.dpdns.org</span>
                 <ExternalLink className="w-4 h-4" />
+              </a>
+
+              <a
+                href="https://learn-academy-platform.surge.sh"
+                target="_blank"
+                rel="noreferrer"
+                className="px-5 py-3 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs border border-white/30 flex items-center gap-1.5 transition-all glow-btn"
+              >
+                <span>Surge Platform Mirror</span>
+                <ExternalLink className="w-3.5 h-3.5" />
               </a>
 
               <a
                 href="https://korasty-kids.surge.sh/"
                 target="_blank"
                 rel="noreferrer"
-                className="px-5 py-3 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs border border-white/30 flex items-center gap-1.5 transition-all glow-btn"
+                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center gap-1.5 transition-all glow-btn"
               >
                 <span>https://korasty-kids.surge.sh</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
 
               <a
-                href="https://korasty.surge.sh/"
+                href="https://dashboard.digitalplat.org/signup?ref=seRKf8j6Tx"
                 target="_blank"
-                rel="noreferrer"
-                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center gap-1.5 transition-all glow-btn"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold border border-slate-700 shadow-md transition-all"
               >
-                <span>korasty.surge.sh</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold text-[10px] uppercase tracking-wider">
+                  DigitalPlat
+                </span>
+                <span>FreeDomain Provider</span>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
               </a>
             </div>
           </div>

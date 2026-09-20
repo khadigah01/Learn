@@ -289,13 +289,24 @@ export const Navbar: React.FC = () => {
     },
     {
       category: 'academic',
-      titleEn: 'Surge Platform (learn-academy-platform.surge.sh)',
-      titleAr: 'منصة سيرج الرسمية',
+      titleEn: 'Official Domain: LearnAcademy.dpdns.org',
+      titleAr: 'الدومين الرسمي: LearnAcademy.dpdns.org',
+      descEn: 'Learn Academy official custom domain provided by DigitalPlat FreeDomain',
+      descAr: 'الدومين الرسمي المعتمد لأكاديمية ليرن بدعم من ديجيتال بلات',
+      route: 'Official Domain',
+      icon: Sparkles,
+      badge: 'Official Domain',
+      action: () => window.open('https://LearnAcademy.dpdns.org', '_blank')
+    },
+    {
+      category: 'academic',
+      titleEn: 'Surge Mirror (learn-academy-platform.surge.sh)',
+      titleAr: 'منصة سيرج الرسمية (مرآة سريعة)',
       descEn: 'Official high-speed mirror deployment on Surge CDN',
       descAr: 'النسخة الرسمية السريعة المستضافة على شبكة سيرج',
       route: 'External Surge Link',
       icon: ExternalLink,
-      badge: 'Official Mirror',
+      badge: 'Mirror',
       action: () => window.open('https://learn-academy-platform.surge.sh', '_blank')
     },
     {
@@ -308,6 +319,17 @@ export const Navbar: React.FC = () => {
       icon: ExternalLink,
       badge: 'Partner',
       action: () => window.open('https://korasty-kids.surge.sh/', '_blank')
+    },
+    {
+      category: 'academic',
+      titleEn: 'DigitalPlat FreeDomain (dashboard.digitalplat.org)',
+      titleAr: 'دومين مجاني من ديجيتال بلات',
+      descEn: 'This website is powered by DigitalPlat FreeDomain',
+      descAr: 'الموقع مدعوم ومستضاف برعاية ديجيتال بلات للدومينات المجانية',
+      route: 'DigitalPlat FreeDomain',
+      icon: ExternalLink,
+      badge: 'Domain Sponsor',
+      action: () => window.open('https://dashboard.digitalplat.org/signup?ref=seRKf8j6Tx', '_blank')
     },
 
     // 5. Portals & Authentication
@@ -453,8 +475,13 @@ export const Navbar: React.FC = () => {
             onClick={() => handleNav('/')}
             className="flex items-center gap-3 cursor-pointer group glow-element"
           >
-            <div className="w-11 h-11 rounded-2xl bg-amber-400 flex items-center justify-center text-slate-950 shadow-md group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-7 h-7 text-slate-950" />
+            <div className="w-11 h-11 rounded-2xl bg-white/90 p-1 flex items-center justify-center text-slate-950 shadow-md group-hover:scale-105 transition-transform overflow-hidden border border-amber-400/40">
+              <img
+                src="/logo.png"
+                alt="Learn Academy Logo"
+                className="w-full h-full object-contain rounded-xl"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
@@ -542,16 +569,16 @@ export const Navbar: React.FC = () => {
             <span>{t.careers}</span>
           </button>
 
-          {/* Official Surge Platform Link */}
+          {/* Official Domain Link */}
           <a
-            href="https://learn-academy-platform.surge.sh"
+            href="https://LearnAcademy.dpdns.org"
             target="_blank"
             rel="noreferrer"
             className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition-all flex items-center gap-1 glow-btn shadow"
-            title="Official Surge Platform: learn-academy-platform.surge.sh"
+            title="Official Custom Domain: LearnAcademy.dpdns.org"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Surge Mirror</span>
+            <span>LearnAcademy.dpdns.org</span>
             <ExternalLink className="w-3 h-3 ml-0.5 opacity-80" />
           </a>
         </nav>
