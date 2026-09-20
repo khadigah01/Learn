@@ -14,6 +14,12 @@ import { Notifications } from './pages/Notifications';
 import { PublicMeetingPage } from './pages/PublicMeeting';
 import { Ads } from './pages/Ads';
 import { CommunicationHub } from './pages/CommunicationHub';
+import { MyBadges } from './pages/MyBadges';
+import { MyPortfolio } from './pages/MyPortfolio';
+import { Settings } from './pages/Settings';
+import { Help } from './pages/Help';
+import { BadgesGuide } from './pages/BadgesGuide';
+import { Payments } from './pages/Payments';
 import { translations } from './utils/translations';
 import { GraduationCap, ExternalLink, Sparkles, LogIn } from 'lucide-react';
 
@@ -104,6 +110,24 @@ const AppContent: React.FC = () => {
     }
     if (path === '/games') {
       return <Games />;
+    }
+    if (path === '/my-badges') {
+      return <MyBadges />;
+    }
+    if (path === '/my-portfolio') {
+      return <MyPortfolio />;
+    }
+    if (path === '/settings') {
+      return <Settings />;
+    }
+    if (path === '/help') {
+      return <Help />;
+    }
+    if (path === '/badges-guide') {
+      return <BadgesGuide />;
+    }
+    if (path === '/payments') {
+      return <Payments />;
     }
 
     // 5. Authenticated-only Routes (Dashboard, Notifications)

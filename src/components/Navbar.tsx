@@ -25,7 +25,10 @@ import {
   Users,
   Search,
   CheckCircle2,
-  FileText
+  FileText,
+  Settings,
+  Trophy,
+  CreditCard
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -387,6 +390,72 @@ export const Navbar: React.FC = () => {
       icon: Bell,
       badge: unreadCount > 0 ? `${unreadCount} New` : undefined,
       action: () => handleNav('/notifications')
+    },
+    {
+      category: 'interactive',
+      titleEn: 'My Badges & Honors (/my-badges)',
+      titleAr: 'شاراتي وإنجازاتي الأكاديمية (/my-badges)',
+      descEn: 'Earned honors, diagnostic test badges, and XP points progression',
+      descAr: 'الأوسمة المحققة وشارات اختبارات المستوى ورتبة الطالب ونقاط XP',
+      route: '/my-badges',
+      icon: Award,
+      badge: 'XP & Honors',
+      action: () => handleNav('/my-badges')
+    },
+    {
+      category: 'portals',
+      titleEn: 'My Academic Portfolio (/my-portfolio)',
+      titleAr: 'ملفي الأكاديمي وسجل إنجازاتي (/my-portfolio)',
+      descEn: 'Comprehensive student profile, diagnostic levels, cohort, and schedule',
+      descAr: 'السجل الأكاديمي الشامل للطالب ودرجات التقييم والمجموعة والحصص',
+      route: '/my-portfolio',
+      icon: GraduationCap,
+      badge: 'Passport',
+      action: () => handleNav('/my-portfolio')
+    },
+    {
+      category: 'portals',
+      titleEn: 'Settings & Preferences (/settings)',
+      titleAr: 'الإعدادات وتفضيلات الحساب (/settings)',
+      descEn: 'Language toggle, game sound effects, notifications, and security',
+      descAr: 'تبديل اللغة، المؤثرات الصوتية، تنبيهات الحصص، وتعديل بيانات الدخول',
+      route: '/settings',
+      icon: Settings,
+      badge: 'Preferences',
+      action: () => handleNav('/settings')
+    },
+    {
+      category: 'communication',
+      titleEn: 'Help Center & FAQs (/help)',
+      titleAr: 'مركز المساعدة والأسئلة الشائعة (/help)',
+      descEn: 'Step-by-step guides, searchable FAQs, and direct concierge support',
+      descAr: 'دليل الاستخدام الشامل والأسئلة الشائعة والدعم الفني المباشر',
+      route: '/help',
+      icon: HelpCircle,
+      badge: 'Support & FAQs',
+      action: () => handleNav('/help')
+    },
+    {
+      category: 'interactive',
+      titleEn: 'Badges & Honors Guide (/badges-guide)',
+      titleAr: 'دليل الشارات ونظام الأوسمة الأكاديمية (/badges-guide)',
+      descEn: 'Complete catalog of all earnable badges, criteria, and XP rewards',
+      descAr: 'الدليل الكامل لكافة الشارات ومعايير استحقاقها ونقاط الخبرة',
+      route: '/badges-guide',
+      icon: Trophy,
+      badge: 'Criteria & XP',
+      action: () => handleNav('/badges-guide')
+    },
+    {
+      category: 'academic',
+      titleEn: 'Tuition & Payments (/payments)',
+      titleAr: 'بوابة الدفع والاشتراك في البرامج (/payments)',
+      descEn: 'Program packages, tuition rates, bank transfer, and receipt submission',
+      descAr: 'باقات الاشتراك وأسعار البرامج وبيانات التحويل البنكي وتأكيد السداد',
+      route: '/payments',
+      icon: CreditCard,
+      badge: 'Tuition & Fees',
+      action: () => handleNav('/payments')
     }
   ];
 
@@ -486,6 +555,30 @@ export const Navbar: React.FC = () => {
           </button>
 
           <button
+            onClick={() => handleNav('/my-badges')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
+              currentPath === '/my-badges' || currentPath === '/badges-guide'
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'text-amber-200 hover:bg-amber-400/20 hover:text-white'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5 text-amber-300" />
+            <span>{language === 'ar' ? 'الشارات' : 'Badges'}</span>
+          </button>
+
+          <button
+            onClick={() => handleNav('/payments')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
+              currentPath === '/payments'
+                ? 'bg-emerald-400 text-slate-950 shadow'
+                : 'text-emerald-200 hover:bg-emerald-500/20 hover:text-white'
+            }`}
+          >
+            <CreditCard className="w-3.5 h-3.5 text-emerald-300" />
+            <span>{language === 'ar' ? 'الرسوم' : 'Tuition'}</span>
+          </button>
+
+          <button
             onClick={() => handleNav('/careers')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
               currentPath === '/careers'
@@ -511,9 +604,35 @@ export const Navbar: React.FC = () => {
           </a>
         </nav>
 
-        {/* Right Actions: Language Switcher, Notifications, Login/Dashboard */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right Actions: Language Switcher, Notifications, Settings, Help, Login/Dashboard */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           
+          {/* Help Center Icon */}
+          <button
+            onClick={() => handleNav('/help')}
+            className={`p-2.5 rounded-xl border transition-all glow-btn cursor-pointer ${
+              currentPath === '/help'
+                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow'
+                : 'bg-white/10 hover:bg-white/20 border-white/10 text-white'
+            }`}
+            title={language === 'ar' ? 'مركز المساعدة والأسئلة الشائعة' : 'Help Center & FAQs'}
+          >
+            <HelpCircle className="w-4 h-4 text-amber-300" />
+          </button>
+
+          {/* Settings Icon */}
+          <button
+            onClick={() => handleNav('/settings')}
+            className={`p-2.5 rounded-xl border transition-all glow-btn cursor-pointer ${
+              currentPath === '/settings'
+                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow'
+                : 'bg-white/10 hover:bg-white/20 border-white/10 text-white'
+            }`}
+            title={language === 'ar' ? 'الإعدادات وتفضيلات الحساب' : 'Settings & Preferences'}
+          >
+            <Settings className="w-4 h-4 text-indigo-200" />
+          </button>
+
           {/* Language Switcher */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}

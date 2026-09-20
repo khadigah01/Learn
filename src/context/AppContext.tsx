@@ -139,7 +139,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       '/dashboard',
       '/games',
       '/careers',
-      '/notifications'
+      '/notifications',
+      '/my-badges',
+      '/my-portfolio',
+      '/settings',
+      '/help',
+      '/badges-guide',
+      '/payments'
     ];
     for (const route of knownRoutes) {
       if (rawPath.endsWith(route)) {

@@ -83,7 +83,13 @@ export const translations: Record<Language, Record<string, string>> = {
     noNotifications: 'No notifications at the moment.',
     editEverythingAdmin: 'Admin Control Center - Full System Edit Capabilities',
     quickLinks: 'Quick Links',
-    glowHoverNote: 'Glow Effect Enabled - Hover over cards & controls to see bright glow feedback!'
+    glowHoverNote: 'Glow Effect Enabled - Hover over cards & controls to see bright glow feedback!',
+    myBadges: 'My Badges',
+    myPortfolio: 'My Portfolio',
+    settings: 'Settings',
+    help: 'Help & FAQs',
+    badgesGuide: 'Badges Guide',
+    payments: 'Tuition & Payments'
   },
   ar: {
     academyName: 'تعلّم',
@@ -167,6 +173,12 @@ export const translations: Record<Language, Record<string, string>> = {
     noNotifications: 'لا توجد إشعارات حالياً.',
     editEverythingAdmin: 'مركز تحكم المسؤول - صلاحيات تعديل ورؤية كاملة',
     quickLinks: 'روابط سريعة',
-    glowHoverNote: 'تأثير التوهج مفعّل - حرك الماوس فوق العناصر للرؤية والتفاعل!'
+    glowHoverNote: 'تأثير التوهج مفعّل - حرك الماوس فوق العناصر للرؤية والتفاعل!',
+    myBadges: 'شاراتي وإنجازاتي',
+    myPortfolio: 'ملفي الأكاديمي',
+    settings: 'الإعدادات',
+    help: 'المساعدة والأسئلة الشائعة',
+    badgesGuide: 'دليل الشارات',
+    payments: 'الرسوم والاشتراك'
   }
 };
