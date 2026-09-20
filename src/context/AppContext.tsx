@@ -212,6 +212,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Real-time Firestore Listeners
   useEffect(() => {
+    const safeHandleSnapshotError = (error: any, collectionName: string) => {
+      if (
+        error?.code === 'unavailable' ||
+        error?.message?.includes('unavailable') ||
+        error?.message?.includes('offline')
+      ) {
+        console.warn(`[Firestore] Operating in offline cache mode for "${collectionName}":`, error.message);
+        return;
+      }
+      handleFirestoreError(error, OperationType.LIST, collectionName);
+    };
+
     // 1. Users listener - Only admin account is real by default
     const unsubUsers = onSnapshot(
       collection(db, 'users'),
@@ -257,7 +269,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'users');
+        safeHandleSnapshotError(error, 'users');
       }
     );
 
@@ -272,7 +284,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setGroups(gList);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'groups');
+        safeHandleSnapshotError(error, 'groups');
       }
     );
 
@@ -287,7 +299,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setMeetings(mList);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'meetings');
+        safeHandleSnapshotError(error, 'meetings');
       }
     );
 
@@ -302,7 +314,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setNotifications(nList);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'notifications');
+        safeHandleSnapshotError(error, 'notifications');
       }
     );
 
@@ -317,7 +329,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCareerApps(cList);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'careerApps');
+        safeHandleSnapshotError(error, 'careerApps');
       }
     );
 
@@ -334,7 +346,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setInquiries(iList);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'inquiries');
+        safeHandleSnapshotError(error, 'inquiries');
       }
     );
 
@@ -356,7 +368,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'programs');
+        safeHandleSnapshotError(error, 'programs');
       }
     );
 

@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Role, User as UserType } from '../types';
+import { User as UserType } from '../types';
 import { User, Lock, Eye, EyeOff, LogIn, GraduationCap, ArrowRight, AlertCircle } from 'lucide-react';
 
-interface Props {
-  defaultRole?: Role;
-}
-
-export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
+export const LoginChoice: React.FC = () => {
   const { registerOrLoginUser, users, showToast, navigate } = useApp();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState<Role>(defaultRole || 'student');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -35,7 +30,7 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
     try {
       const cleanLower = cleanUsername.toLowerCase();
 
-      // 1. Default system administrator account (strictly admin / admin)
+      // 1. Default system administrator account (admin / admin)
       if (cleanLower === 'admin' && cleanPassword === 'admin') {
         const adminUser: UserType = {
           id: 'admin',
@@ -51,7 +46,7 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
         return;
       }
 
-      // 2. Real account authentication: Check against Firestore registered users
+      // 2. Real account authentication: Check against registered users in Firestore
       const existingUser = users.find(
         (u) =>
           (u.username && u.username.toLowerCase() === cleanLower) ||
@@ -60,16 +55,8 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
 
       // Verify user exists in the database
       if (existingUser) {
-        // Strictly verify password matches the stored password for this real account
+        // Verify password matches the stored password
         if (existingUser.password === cleanPassword) {
-          // Verify role matches the portal tab unless user is an admin
-          if (selectedRole && existingUser.role !== selectedRole && existingUser.role !== 'admin') {
-            const roleMismatch = `This account is registered as a "${existingUser.role}", not as "${selectedRole}". Please select the ${existingUser.role} tab.`;
-            setErrorMessage(roleMismatch);
-            showToast('error', 'Invalid role for this account', `هذا الحساب مسجل برتبة ${existingUser.role}`);
-            return;
-          }
-
           await registerOrLoginUser(existingUser);
           showToast('success', `Welcome back, ${existingUser.name}!`, `مرحباً بعودتك، ${existingUser.name}!`);
           navigate('/dashboard');
@@ -107,41 +94,14 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
           </div>
         </div>
 
-        {/* Header Title */}
+        {/* Header Title - Prominently says /login and NOT student login, without role switcher */}
         <div className="text-center mb-7">
-          <h1 className="text-2xl sm:text-[26px] font-black text-[#584ee4] tracking-tight mb-1">
-            Learn Academy
+          <h1 className="text-3xl sm:text-4xl font-black text-[#584ee4] tracking-tight mb-1 font-mono">
+            /login
           </h1>
-          <p className="text-[#6f7e8c] font-extrabold text-base">
-            {selectedRole === 'admin'
-              ? 'Admin Login'
-              : selectedRole === 'teacher'
-              ? 'Teacher Login'
-              : selectedRole === 'coordinator'
-              ? 'Coordinator Login'
-              : 'Student Login'}
+          <p className="text-[#6f7e8c] font-extrabold text-sm">
+            Learn Academy
           </p>
-        </div>
-
-        {/* Role Quick Selector Pills */}
-        <div className="flex items-center justify-center gap-1.5 mb-6 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-          {(['student', 'teacher', 'coordinator', 'admin'] as Role[]).map((role) => (
-            <button
-              key={role}
-              type="button"
-              onClick={() => {
-                setSelectedRole(role);
-                setErrorMessage(null);
-              }}
-              className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold capitalize transition-all ${
-                selectedRole === role
-                  ? 'bg-[#584ee4] text-white shadow-md'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              {role}
-            </button>
-          ))}
         </div>
 
         {/* Inline Error Message Banner */}
@@ -204,7 +164,7 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-[#6f7e8c] hover:text-slate-800 transition-colors ml-2 rtl:mr-2 rtl:ml-0 focus:outline-none"
+                className="text-[#6f7e8c] hover:text-slate-800 transition-colors ml-2 rtl:mr-2 rtl:ml-0 focus:outline-none cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -218,7 +178,7 @@ export const LoginChoice: React.FC<Props> = ({ defaultRole }) => {
             className="w-full py-4 rounded-[2rem] bg-gradient-to-r from-[#594ee3] via-[#6d50db] to-[#805ad5] hover:from-[#4c41d1] hover:to-[#7042c9] active:scale-[0.99] text-white font-black text-base shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 glow-btn"
           >
             <LogIn className="w-5 h-5" />
-            <span>{loading ? 'Connecting...' : 'Login'}</span>
+            <span>{loading ? 'Connecting...' : '/login'}</span>
             <ArrowRight className="w-4 h-4 rtl:rotate-180" />
           </button>
         </form>

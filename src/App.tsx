@@ -73,20 +73,14 @@ const AppContent: React.FC = () => {
     }
 
     // 2. Login Routes
-    if (path === '/login') {
+    if (
+      path === '/login' ||
+      path === '/login/student' ||
+      path === '/login/teacher' ||
+      path === '/login/coordinator' ||
+      path === '/login/admin'
+    ) {
       return <LoginChoice />;
-    }
-    if (path === '/login/student') {
-      return <LoginRole role="student" />;
-    }
-    if (path === '/login/teacher') {
-      return <LoginRole role="teacher" />;
-    }
-    if (path === '/login/coordinator') {
-      return <LoginRole role="coordinator" />;
-    }
-    if (path === '/login/admin') {
-      return <LoginRole role="admin" />;
     }
 
     // 3. Communication Hub Routes (/ask/* & /talk/*)

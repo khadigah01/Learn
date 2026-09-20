@@ -45,7 +45,6 @@ export const Navbar: React.FC = () => {
   } = useApp();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const [menuSearch, setMenuSearch] = useState('');
   const [menuFilter, setMenuFilter] = useState<'all' | 'academic' | 'interactive' | 'communication' | 'portals'>('all');
 
@@ -55,12 +54,10 @@ export const Navbar: React.FC = () => {
   const handleNav = (path: string) => {
     navigate(path);
     setMenuOpen(false);
-    setLoginDropdownOpen(false);
   };
 
   const handleSectionNav = (sectionId: string) => {
     setMenuOpen(false);
-    setLoginDropdownOpen(false);
     if (currentPath !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -79,7 +76,6 @@ export const Navbar: React.FC = () => {
 
   const handleStartTest = (subject: 'math' | 'arabic' | 'english') => {
     setMenuOpen(false);
-    setLoginDropdownOpen(false);
     if (currentPath !== '/') {
       navigate('/');
     }
@@ -317,54 +313,10 @@ export const Navbar: React.FC = () => {
     // 5. Portals & Authentication
     {
       category: 'portals',
-      titleEn: 'Student Login Portal (/login/student)',
-      titleAr: 'بوابة دخول الطلاب',
-      descEn: 'Access classes, view scores, join meetings, and play games',
-      descAr: 'حضور الحصص ومتابعة الدرجات والانضمام للاجتماعات',
-      route: '/login/student',
-      icon: LogIn,
-      badge: 'Student',
-      action: () => handleNav('/login/student')
-    },
-    {
-      category: 'portals',
-      titleEn: 'Teacher Login Portal (/login/teacher)',
-      titleAr: 'بوابة دخول المعلمين',
-      descEn: 'Host live classrooms, manage student groups, grade assignments',
-      descAr: 'إدارة الفصول المباشرة والمجموعات والتقييمات الأكاديمية',
-      route: '/login/teacher',
-      icon: LogIn,
-      badge: 'Teacher',
-      action: () => handleNav('/login/teacher')
-    },
-    {
-      category: 'portals',
-      titleEn: 'Coordinator Login Portal (/login/coordinator)',
-      titleAr: 'بوابة دخول المنسق الأكاديمي',
-      descEn: 'Schedule meetings, assign teachers, monitor student cohorts',
-      descAr: 'جدولة الحصص وتعيين المعلمين ومتابعة المجموعات الدراسية',
-      route: '/login/coordinator',
-      icon: LogIn,
-      badge: 'Coordinator',
-      action: () => handleNav('/login/coordinator')
-    },
-    {
-      category: 'portals',
-      titleEn: 'Administrator Login Portal (/login/admin)',
-      titleAr: 'بوابة دخول الإدارة العامة',
-      descEn: 'Full system control, users manager, curricula editor, careers review',
-      descAr: 'تحكم كامل بالنظام وإدارة المستخدمين والمناهج والوظائف',
-      route: '/login/admin',
-      icon: LogIn,
-      badge: 'Admin (admin/admin)',
-      action: () => handleNav('/login/admin')
-    },
-    {
-      category: 'portals',
-      titleEn: 'Unified Login Hub (/login)',
-      titleAr: 'بوابة تسجيل الدخول الشاملة',
-      descEn: 'Switch between Student, Teacher, Coordinator, and Admin login tabs',
-      descAr: 'التبديل بين بوابات الطلاب والمعلمين والمنسقين والإدارة',
+      titleEn: '/login',
+      titleAr: 'تسجيل الدخول (/login)',
+      descEn: 'Sign in to your Learn Academy account',
+      descAr: 'تسجيل الدخول إلى حسابك في أكاديمية ليرن',
       route: '/login',
       icon: LogIn,
       action: () => handleNav('/login')
@@ -694,53 +646,13 @@ export const Navbar: React.FC = () => {
                 <span>{language === 'ar' ? 'سجّل الآن' : 'Register Now'}</span>
               </button>
 
-              <div className="relative">
-                <button
-                  onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
-                  className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold flex items-center gap-1.5 shadow-md transition-all glow-btn cursor-pointer"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t.login}</span>
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-
-                {/* Login Options Dropdown */}
-                {loginDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 text-slate-800 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                      Select Portal / اختر البوابة
-                    </div>
-                    <button
-                      onClick={() => handleNav('/login/student')}
-                      className="w-full text-left rtl:text-right px-4 py-2.5 text-sm font-semibold hover:bg-indigo-50 hover:text-indigo-600 transition-colors flex items-center justify-between"
-                    >
-                      <span>{t.studentLogin}</span>
-                      <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Student</span>
-                    </button>
-                    <button
-                      onClick={() => handleNav('/login/teacher')}
-                      className="w-full text-left rtl:text-right px-4 py-2.5 text-sm font-semibold hover:bg-indigo-50 hover:text-indigo-600 transition-colors flex items-center justify-between"
-                    >
-                      <span>{t.teacherLogin}</span>
-                      <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Teacher</span>
-                    </button>
-                    <button
-                      onClick={() => handleNav('/login/coordinator')}
-                      className="w-full text-left rtl:text-right px-4 py-2.5 text-sm font-semibold hover:bg-indigo-50 hover:text-indigo-600 transition-colors flex items-center justify-between"
-                    >
-                      <span>{t.coordinatorLogin}</span>
-                      <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">Coordinator</span>
-                    </button>
-                    <button
-                      onClick={() => handleNav('/login/admin')}
-                      className="w-full text-left rtl:text-right px-4 py-2.5 text-sm font-semibold hover:bg-indigo-50 hover:text-indigo-600 transition-colors flex items-center justify-between border-t border-slate-100"
-                    >
-                      <span>{t.adminLogin}</span>
-                      <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Admin</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => handleNav('/login')}
+                className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold flex items-center gap-1.5 shadow-md transition-all glow-btn cursor-pointer"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="font-mono font-black">/login</span>
+              </button>
             </div>
           )}
         </div>
