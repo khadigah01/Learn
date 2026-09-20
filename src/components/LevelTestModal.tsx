@@ -124,16 +124,16 @@ export const LevelTestModal: React.FC<Props> = ({ subject, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-purple-100 glow-card">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-purple-100 glow-card max-h-[90vh] flex flex-col my-auto">
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-xl">{subjectIcon}</div>
-            <div>
-              <h3 className="text-xl font-black">{subjectTitle}</h3>
-              <p className="text-xs text-indigo-100">
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white p-4 sm:p-6 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="p-2 bg-white/20 rounded-xl shrink-0">{subjectIcon}</div>
+            <div className="min-w-0">
+              <h3 className="text-lg sm:text-xl font-black truncate">{subjectTitle}</h3>
+              <p className="text-xs text-indigo-100 hidden sm:block">
                 {language === 'ar'
                   ? 'اختبار تفاعلي تقييمي لتحديد مستواك الأكاديمي'
                   : 'Interactive diagnostic test to evaluate your academic proficiency'}
@@ -142,14 +142,14 @@ export const LevelTestModal: React.FC<Props> = ({ subject, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 md:p-8">
+        <div className="p-4 sm:p-6 md:p-8 overflow-y-auto flex-1">
           {!isCompleted ? (
             <div>
               {/* Question Progress Bar */}

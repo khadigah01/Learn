@@ -157,7 +157,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#5b51d8] via-[#4f46e5] to-[#3730a3] text-slate-800 font-sans selection:bg-amber-300 selection:text-slate-900">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden flex flex-col bg-gradient-to-b from-[#5b51d8] via-[#4f46e5] to-[#3730a3] text-slate-800 font-sans selection:bg-amber-300 selection:text-slate-900">
       
       {/* Toast Overlay */}
       <ToastContainer />
@@ -166,7 +166,7 @@ const AppContent: React.FC = () => {
       <Navbar />
 
       {/* Main Page Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 min-w-0">
         {renderRoute()}
       </main>
 

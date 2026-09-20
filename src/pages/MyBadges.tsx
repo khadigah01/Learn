@@ -295,7 +295,7 @@ export const MyBadges: React.FC = () => {
           </div>
 
           {/* User Achievement Stats */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 min-w-[240px] space-y-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 w-full md:w-auto md:min-w-[240px] space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="text-xs font-semibold text-indigo-200">
                 {language === 'ar' ? 'المستخدم الحالي' : 'Learner'}

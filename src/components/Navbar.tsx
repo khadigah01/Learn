@@ -449,14 +449,15 @@ export const Navbar: React.FC = () => {
   });
 
   return (
-    <header className="sticky top-0 z-50 bg-[#4f46e5] border-b border-white/10 text-white shadow-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-[#4f46e5] border-b border-white/10 text-white shadow-xl w-full">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 h-20 flex items-center justify-between gap-2 sm:gap-3 min-w-0">
         
-        <div className="flex items-center gap-3">
+        {/* Left: Hamburger Directory Toggle & Brand */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
           {/* Hamburger Menu Toggle - Accessible on All Devices */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`p-2.5 rounded-2xl transition-all cursor-pointer flex items-center gap-2 ${
+            className={`p-2 sm:p-2.5 rounded-2xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
               menuOpen
                 ? 'bg-amber-400 text-slate-950 shadow-lg ring-2 ring-white/50'
                 : 'bg-white/10 hover:bg-white/20 text-white'
@@ -464,18 +465,18 @@ export const Navbar: React.FC = () => {
             title="Open Site Directory & Menu"
             aria-label="Open Site Directory & Menu"
           >
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            <span className="hidden sm:inline font-extrabold text-xs">
-              {language === 'ar' ? 'القائمة الشاملة' : 'Site Directory'}
+            {menuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
+            <span className="hidden md:inline font-extrabold text-xs whitespace-nowrap">
+              {language === 'ar' ? 'القائمة' : 'Directory'}
             </span>
           </button>
 
           {/* Brand Logo & Name */}
           <div
             onClick={() => handleNav('/')}
-            className="flex items-center gap-3 cursor-pointer group glow-element"
+            className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group glow-element shrink-0"
           >
-            <div className="w-11 h-11 rounded-2xl bg-white/90 p-1 flex items-center justify-center text-slate-950 shadow-md group-hover:scale-105 transition-transform overflow-hidden border border-amber-400/40">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-white/90 p-1 flex items-center justify-center text-slate-950 shadow-md group-hover:scale-105 transition-transform overflow-hidden border border-amber-400/40 shrink-0">
               <img
                 src="/logo.png"
                 alt="Learn Academy Logo"
@@ -483,24 +484,24 @@ export const Navbar: React.FC = () => {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xl sm:text-2xl font-black tracking-tight text-white group-hover:text-amber-300 transition-colors">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1">
+                <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-white group-hover:text-amber-300 transition-colors whitespace-nowrap">
                   {t.academyName}
                 </span>
               </div>
-              <p className="text-[11px] text-amber-300 font-bold hidden sm:block">
+              <p className="text-[10px] sm:text-[11px] text-amber-300 font-bold hidden 2xl:block whitespace-nowrap">
                 Math • Arabic • English
               </p>
             </div>
           </div>
         </div>
 
-        {/* Desktop Quick Nav Shortcuts */}
-        <nav className="hidden lg:flex items-center gap-1.5">
+        {/* Desktop Quick Nav Shortcuts - Tiered Responsiveness */}
+        <nav className="hidden xl:flex items-center gap-1 2xl:gap-1.5 shrink min-w-0 justify-center">
           <button
             onClick={() => handleNav('/')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all glow-btn ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all glow-btn whitespace-nowrap ${
               currentPath === '/'
                 ? 'bg-white/20 text-white shadow'
                 : 'text-indigo-100 hover:bg-white/10 hover:text-white'
@@ -511,126 +512,128 @@ export const Navbar: React.FC = () => {
 
           <button
             onClick={() => handleNav('/games')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn whitespace-nowrap ${
               currentPath === '/games'
                 ? 'bg-amber-400 text-slate-950 shadow'
                 : 'text-amber-300 hover:bg-amber-400/20'
             }`}
           >
-            <Gamepad2 className="w-3.5 h-3.5" />
-            {t.games}
+            <Gamepad2 className="w-3.5 h-3.5 shrink-0" />
+            <span>{t.games}</span>
           </button>
 
           <button
             onClick={() => handleNav('/ask/admin')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn whitespace-nowrap ${
               currentPath.startsWith('/ask') || currentPath.startsWith('/talk')
                 ? 'bg-amber-400 text-slate-950 shadow'
                 : 'text-amber-200 hover:bg-amber-400/20 hover:text-white'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
             <span>{language === 'ar' ? 'تواصل واسأل' : 'Ask & Talk'}</span>
           </button>
 
           <button
-            onClick={() => handleNav('/my-badges')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
-              currentPath === '/my-badges' || currentPath === '/badges-guide'
-                ? 'bg-amber-400 text-slate-950 shadow'
-                : 'text-amber-200 hover:bg-amber-400/20 hover:text-white'
-            }`}
-          >
-            <Award className="w-3.5 h-3.5 text-amber-300" />
-            <span>{language === 'ar' ? 'الشارات' : 'Badges'}</span>
-          </button>
-
-          <button
             onClick={() => handleNav('/payments')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn whitespace-nowrap ${
               currentPath === '/payments'
                 ? 'bg-emerald-400 text-slate-950 shadow'
                 : 'text-emerald-200 hover:bg-emerald-500/20 hover:text-white'
             }`}
           >
-            <CreditCard className="w-3.5 h-3.5 text-emerald-300" />
+            <CreditCard className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
             <span>{language === 'ar' ? 'الرسوم' : 'Tuition'}</span>
+          </button>
+
+          {/* Extended links visible on 2xl screens */}
+          <button
+            onClick={() => handleNav('/my-badges')}
+            className={`hidden 2xl:flex px-3 py-1.5 rounded-xl text-xs font-bold items-center gap-1 transition-all glow-btn whitespace-nowrap ${
+              currentPath === '/my-badges' || currentPath === '/badges-guide'
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'text-amber-200 hover:bg-amber-400/20 hover:text-white'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+            <span>{language === 'ar' ? 'الشارات' : 'Badges'}</span>
           </button>
 
           <button
             onClick={() => handleNav('/careers')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn ${
+            className={`hidden 2xl:flex px-3 py-1.5 rounded-xl text-xs font-bold items-center gap-1 transition-all glow-btn whitespace-nowrap ${
               currentPath === '/careers'
                 ? 'bg-emerald-400 text-slate-950 shadow'
                 : 'text-emerald-300 hover:bg-emerald-500/20'
             }`}
           >
-            <Briefcase className="w-3.5 h-3.5" />
+            <Briefcase className="w-3.5 h-3.5 shrink-0" />
             <span>{t.careers}</span>
           </button>
 
-          {/* Official Domain Link */}
+          {/* Official Domain Link on 2xl */}
           <a
             href="https://LearnAcademy.dpdns.org"
             target="_blank"
             rel="noreferrer"
-            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition-all flex items-center gap-1 glow-btn shadow"
+            className="hidden 2xl:flex px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition-all items-center gap-1 glow-btn shadow whitespace-nowrap"
             title="Official Custom Domain: LearnAcademy.dpdns.org"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
             <span>LearnAcademy.dpdns.org</span>
-            <ExternalLink className="w-3 h-3 ml-0.5 opacity-80" />
+            <ExternalLink className="w-3 h-3 ml-0.5 opacity-80 shrink-0" />
           </a>
         </nav>
 
-        {/* Right Actions: Language Switcher, Notifications, Settings, Help, Login/Dashboard */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+        {/* Right Actions: Help, Settings, Language, Notifications, Register/Login */}
+        <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0 ml-auto min-w-0">
           
           {/* Help Center Icon */}
           <button
             onClick={() => handleNav('/help')}
-            className={`p-2.5 rounded-xl border transition-all glow-btn cursor-pointer ${
+            className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center transition-all glow-btn cursor-pointer shrink-0 ${
               currentPath === '/help'
                 ? 'bg-amber-400 text-slate-950 border-amber-300 shadow'
                 : 'bg-white/10 hover:bg-white/20 border-white/10 text-white'
             }`}
             title={language === 'ar' ? 'مركز المساعدة والأسئلة الشائعة' : 'Help Center & FAQs'}
           >
-            <HelpCircle className="w-4 h-4 text-amber-300" />
+            <HelpCircle className="w-4 h-4 text-amber-300 shrink-0" />
           </button>
 
           {/* Settings Icon */}
           <button
             onClick={() => handleNav('/settings')}
-            className={`p-2.5 rounded-xl border transition-all glow-btn cursor-pointer ${
+            className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl border flex items-center justify-center transition-all glow-btn cursor-pointer shrink-0 ${
               currentPath === '/settings'
                 ? 'bg-amber-400 text-slate-950 border-amber-300 shadow'
                 : 'bg-white/10 hover:bg-white/20 border-white/10 text-white'
             }`}
             title={language === 'ar' ? 'الإعدادات وتفضيلات الحساب' : 'Settings & Preferences'}
           >
-            <Settings className="w-4 h-4 text-indigo-200" />
+            <Settings className="w-4 h-4 text-indigo-200 shrink-0" />
           </button>
 
           {/* Language Switcher */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-xs font-bold flex items-center gap-1.5 transition-all glow-btn cursor-pointer"
+            className="h-8 sm:h-9 md:h-10 px-2 sm:px-2.5 md:px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-xs font-bold flex items-center gap-1 transition-all glow-btn cursor-pointer shrink-0 whitespace-nowrap"
             title="Switch Language / تغيير اللغة"
           >
-            <Globe2 className="w-4 h-4 text-amber-300" />
-            <span>{language === 'en' ? 'العربية' : 'English'}</span>
+            <Globe2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
+            <span className="hidden sm:inline">{language === 'en' ? 'العربية' : 'English'}</span>
+            <span className="sm:hidden font-bold">{language === 'en' ? 'عربي' : 'EN'}</span>
           </button>
 
           {/* Notifications Icon with Badge */}
           <button
             onClick={() => handleNav('/notifications')}
-            className="relative p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-all glow-btn cursor-pointer"
+            className="relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-all glow-btn cursor-pointer shrink-0"
             title={t.notifications}
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center animate-pulse shadow">
+              <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-rose-500 text-white text-[9px] sm:text-[10px] font-black rounded-full flex items-center justify-center animate-pulse shadow">
                 {unreadCount}
               </span>
             )}
@@ -638,46 +641,46 @@ export const Navbar: React.FC = () => {
 
           {/* User Logged In vs Logged Out State */}
           {currentUser ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <button
                 onClick={() => handleNav('/dashboard')}
-                className={`px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all glow-btn ${
+                className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all glow-btn whitespace-nowrap shrink-0 ${
                   currentPath === '/dashboard'
                     ? 'bg-amber-400 text-slate-950 shadow-md'
                     : 'bg-white text-indigo-900 hover:bg-amber-300'
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4" />
+                <LayoutDashboard className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">{currentUser.name.split(' ')[0]}</span>
-                <span className="px-1.5 py-0.5 text-[10px] uppercase bg-indigo-900/10 text-indigo-950 rounded font-black">
+                <span className="px-1.5 py-0.5 text-[9px] sm:text-[10px] uppercase bg-indigo-900/10 text-indigo-950 rounded font-black">
                   {currentUser.role}
                 </span>
               </button>
 
               <button
                 onClick={handleLogout}
-                className="p-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-200 hover:text-white transition-all glow-btn cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-200 hover:text-white flex items-center justify-center transition-all glow-btn cursor-pointer shrink-0"
                 title={t.logout}
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4 shrink-0" />
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              {/* Register Now CTA */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Register Now CTA (Visible on lg+ where there's plenty of room) */}
               <button
                 onClick={() => handleNav('/ads')}
-                className="hidden sm:flex px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 text-sm font-black items-center gap-1.5 shadow-lg transition-all glow-btn cursor-pointer"
+                className="hidden lg:flex px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 text-xs sm:text-sm font-black items-center gap-1.5 shadow-lg transition-all glow-btn cursor-pointer whitespace-nowrap shrink-0"
               >
-                <Sparkles className="w-4 h-4 text-slate-950" />
+                <Sparkles className="w-4 h-4 text-slate-950 shrink-0" />
                 <span>{language === 'ar' ? 'سجّل الآن' : 'Register Now'}</span>
               </button>
 
               <button
                 onClick={() => handleNav('/login')}
-                className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold flex items-center gap-1.5 shadow-md transition-all glow-btn cursor-pointer"
+                className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold flex items-center gap-1 shadow-md transition-all glow-btn cursor-pointer whitespace-nowrap shrink-0"
               >
-                <LogIn className="w-4 h-4" />
+                <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                 <span className="font-mono font-black">/login</span>
               </button>
             </div>

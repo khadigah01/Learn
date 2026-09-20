@@ -41,41 +41,41 @@ export const Home: React.FC = () => {
             <span>{t.welcomeMessage}</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight max-w-4xl mx-auto text-white">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight max-w-4xl mx-auto text-white">
             {t.heroTitle}
           </h1>
 
-          <p className="text-base sm:text-lg text-indigo-100 max-w-2xl mx-auto font-medium leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg text-indigo-100 max-w-2xl mx-auto font-medium leading-relaxed px-2">
             {t.heroDesc}
           </p>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-4 w-full max-w-full">
             <a
-              href="https://learn-academy-platform.surge.sh"
+              href="https://LearnAcademy.dpdns.org"
               target="_blank"
               rel="noreferrer"
-              className="px-8 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-base shadow-xl flex items-center gap-2 transition-all glow-btn"
+              className="w-full sm:w-auto px-5 sm:px-7 py-3.5 sm:py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm sm:text-base shadow-xl flex items-center justify-center gap-2 transition-all glow-btn"
             >
-              <Sparkles className="w-5 h-5 text-slate-950" />
-              <span>learn-academy-platform.surge.sh</span>
-              <ExternalLink className="w-5 h-5" />
+              <Sparkles className="w-5 h-5 text-slate-950 shrink-0" />
+              <span className="truncate">LearnAcademy.dpdns.org</span>
+              <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
             </a>
 
             <button
               onClick={() => navigate('/ads')}
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-base shadow-xl flex items-center gap-2 transition-all glow-btn"
+              className="w-full sm:w-auto px-5 sm:px-7 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-sm sm:text-base shadow-xl flex items-center justify-center gap-2 transition-all glow-btn"
             >
-              <Sparkles className="w-5 h-5 text-slate-950" />
-              <span>{language === 'ar' ? 'سجّل الآن (/ads)' : 'Register Now'}</span>
-              <ArrowRight className="w-5 h-5 rtl:rotate-180" />
+              <Sparkles className="w-5 h-5 text-slate-950 shrink-0" />
+              <span>{language === 'ar' ? 'سجّل الآن' : 'Register Now'}</span>
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180 shrink-0" />
             </button>
 
             <button
               onClick={() => handleStartTest('math')}
-              className="px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-base shadow-lg flex items-center gap-2 backdrop-blur-md transition-all glow-btn"
+              className="w-full sm:w-auto px-5 sm:px-7 py-3.5 sm:py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 backdrop-blur-md transition-all glow-btn"
             >
-              <Calculator className="w-5 h-5 text-amber-300" />
+              <Calculator className="w-5 h-5 text-amber-300 shrink-0" />
               <span>{t.mathTest}</span>
             </button>
           </div>
