@@ -19,7 +19,10 @@ import {
   Moon,
   Smartphone,
   Code,
-  Power
+  Power,
+  Lock,
+  LogIn,
+  LayoutDashboard
 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
@@ -475,78 +478,127 @@ export const Settings: React.FC = () => {
           </div>
         )}
 
-        {/* 5. Admin Control: Scratch Curriculum Availability Toggle */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-200 shadow-md space-y-6 glow-card">
-          <div className="flex items-center justify-between border-b border-orange-100 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center border border-orange-200">
-                <Code className="w-5 h-5" />
+        {/* 5. Admin Control: Scratch Curriculum Availability & System Controls */}
+        {currentUser?.role === 'admin' ? (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-200 shadow-md space-y-6 glow-card">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-orange-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center border border-orange-200">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-black text-slate-900">
+                      {language === 'ar' ? 'إدارة النظام وصلاحيات المسؤول (Admin Controls)' : 'Admin System & Curriculum Controls'}
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      {language === 'ar' ? 'مسؤول معتمد' : 'Admin Authenticated'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    {language === 'ar'
+                      ? 'التحكم في توفر مسار سكراتش، وإدارة إعدادات النظام الحساسة'
+                      : 'System-wide configuration, Scratch track availability, and curriculum management'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-black text-slate-900">
-                    {language === 'ar' ? 'إدارة توفر مسار برمجة سكراتش (Scratch)' : 'Scratch Curriculum Availability Control'}
-                  </h2>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                    scratchAvailable
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : 'bg-rose-100 text-rose-800 border border-rose-300'
-                  }`}>
-                    {scratchAvailable ? (language === 'ar' ? 'متاح الآن' : 'Available / Active') : (language === 'ar' ? 'غير متاح / معطّل' : 'Unavailable / Paused')}
+
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>{language === 'ar' ? 'لوحة التحكم الكاملة' : 'Admin Dashboard'}</span>
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-orange-50/60 border border-orange-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <Code className="w-4 h-4 text-orange-600" />
+                  <span>
+                    {scratchAvailable
+                      ? (language === 'ar' ? 'مسار سكراتش متاح حالياً للجميع' : 'Scratch is currently AVAILABLE on the website')
+                      : (language === 'ar' ? 'مسار سكراتش معطّل وغير متاح للجمهور' : 'Scratch is currently marked UNAVAILABLE')}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">
-                  {language === 'ar'
-                    ? 'التحكم في إتاحة دورات واختبارات برمجة سكراتش للطلاب والزوار عبر الموقع بأكمله'
-                    : 'Toggle whether students and visitors can enroll in Scratch coding courses and take diagnostic tests'}
+                <p className="text-xs text-slate-600">
+                  {scratchAvailable
+                    ? (language === 'ar'
+                        ? 'يمكن للطلاب رؤية مسار سكراتش وخوض اختبار تحديد المستوى والتسجيل في الحصص.'
+                        : 'Students can see the Scratch track on the homepage, take tests, and enroll.')
+                    : (language === 'ar'
+                        ? 'سيظهر مسار سكراتش كـ "غير متاح حالياً / التسجيل متوقف" للزوار والطلاب.'
+                        : 'The Scratch track will display as "Currently Unavailable / Paused by Admin".')}
                 </p>
               </div>
-            </div>
 
-            <div className="hidden sm:block">
-              <span className="text-[11px] font-bold text-slate-400">
-                {language === 'ar' ? 'صلاحيات المسؤول (Admin)' : 'Admin System Control'}
-              </span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-orange-50/50 border border-orange-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <button
+                onClick={toggleScratchAvailability}
+                className={`px-5 py-2.5 rounded-xl font-black text-xs shadow-md flex items-center gap-2 transition-all glow-btn shrink-0 cursor-pointer ${
+                  scratchAvailable
+                    ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                }`}
+              >
+                <Power className="w-4 h-4" />
                 <span>
                   {scratchAvailable
-                    ? (language === 'ar' ? 'مسار سكراتش متاح حالياً للجميع' : 'Scratch is currently AVAILABLE on the website')
-                    : (language === 'ar' ? 'مسار سكراتش معطّل وغير متاح للجمهور' : 'Scratch is currently marked UNAVAILABLE')}
+                    ? (language === 'ar' ? 'تعطيل توفر سكراتش (Mark Unavailable)' : 'Disable Scratch (Mark Unavailable)')
+                    : (language === 'ar' ? 'تفعيل توفر سكراتش (Make Available)' : 'Enable Scratch (Make Available)')}
                 </span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* LOCKED ADMIN PANEL - REQUIRES LOGIN TO ADMIN ACCOUNT */
+          <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl text-white space-y-5 relative overflow-hidden glow-card">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 shrink-0">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base sm:text-lg font-black text-white">
+                      {language === 'ar' ? 'إعدادات وصلاحيات المسؤول (Admin Access Only)' : 'Admin System Settings (Admin Login Required)'}
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                      {language === 'ar' ? 'يتطلب تسجيل دخول مسؤول' : 'Restricted to Admins'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    {language === 'ar'
+                      ? 'التحكم في توفر مسارات المناهج (مثل سكراتش) والإعدادات الشاملة يتطلب تسجيل الدخول بحساب مسؤول معتمد.'
+                      : 'Modifying system availability, Scratch curriculum status, and platform controls requires logging into an Administrator account.'}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-slate-600">
-                {scratchAvailable
-                  ? (language === 'ar'
-                      ? 'يمكن للطلاب رؤية مسار سكراتش وخوض اختبار تحديد المستوى والتسجيل في الحصص.'
-                      : 'Students can see the Scratch track on the homepage, take tests, and enroll.')
-                  : (language === 'ar'
-                      ? 'سيظهر مسار سكراتش كـ "غير متاح حالياً / التسجيل متوقف" للزوار والطلاب.'
-                      : 'The Scratch track will display as "Currently Unavailable / Paused by Admin".')}
-              </p>
             </div>
 
-            <button
-              onClick={toggleScratchAvailability}
-              className={`px-5 py-2.5 rounded-xl font-black text-xs shadow-md flex items-center gap-2 transition-all glow-btn shrink-0 cursor-pointer ${
-                scratchAvailable
-                  ? 'bg-rose-600 hover:bg-rose-500 text-white'
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-              }`}
-            >
-              <Power className="w-4 h-4" />
-              <span>
-                {scratchAvailable
-                  ? (language === 'ar' ? 'تعطيل توفر سكراتش (Mark Unavailable)' : 'Disable Scratch (Mark Unavailable)')
-                  : (language === 'ar' ? 'تفعيل توفر سكراتش (Make Available)' : 'Enable Scratch (Make Available)')}
-              </span>
-            </button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {language === 'ar'
+                    ? currentUser
+                      ? `أنت مسجل حالياً بحساب (@${currentUser.username}) برتبة: ${currentUser.role === 'student' ? 'طالب' : currentUser.role === 'teacher' ? 'معلم' : 'منسق'}. للوصول إلى أدوات المسؤول، يرجى التبديل إلى حساب مسؤول.`
+                      : 'أنت في وضع الزائر. للوصول إلى أدوات النظام وإعدادات المسارات، يرجى تسجيل الدخول بحساب مسؤول.'
+                    : currentUser
+                      ? `You are currently logged in as @${currentUser.username} (${currentUser.role}). To access system controls, please switch to an Administrator account.`
+                      : 'You are currently in guest mode. To access system controls, please log in with an Administrator account.'}
+                </p>
+              </div>
+
+              <button
+                onClick={() => navigate('/login/admin')}
+                className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-lg transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer glow-btn"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>{language === 'ar' ? 'تسجيل دخول كمسؤول (Admin Login)' : 'Log In as Admin'}</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 7. Notification System (Toastify Live Verification) */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md space-y-6 glow-card">
