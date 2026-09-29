@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   collection,
   doc,
@@ -7,6 +7,7 @@ import {
   deleteDoc,
   onSnapshot
 } from 'firebase/firestore';
+import { toast } from 'react-toastify';
 import { db, handleFirestoreError, OperationType, cleanFirestoreData } from '../lib/firebase';
 import {
   User,
@@ -35,8 +36,12 @@ interface AppContextType {
   inquiries: InquiryMessage[];
   programs: ProgramItem[];
   toasts: ToastMessage[];
-  showToast: (type: 'success' | 'error' | 'info', messageEn: string, messageAr?: string) => void;
+  showToast: (type: 'success' | 'error' | 'info' | 'warning', messageEn: string, messageAr?: string) => void;
   removeToast: (id: string) => void;
+
+  // Scratch curriculum availability toggle (Admin controlled)
+  scratchAvailable: boolean;
+  toggleScratchAvailability: () => Promise<void>;
   
   // Account & User Actions
   registerOrLoginUser: (user: User) => Promise<User>;
@@ -116,6 +121,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [careerApps, setCareerApps] = useState<CareerApplication[]>([]);
   const [inquiries, setInquiries] = useState<InquiryMessage[]>([]);
   const [programs, setPrograms] = useState<ProgramItem[]>(initialProgramsData);
+  const [scratchAvailable, setScratchAvailable] = useState<boolean>(() => {
+    return localStorage.getItem('learn_scratch_available') !== 'false';
+  });
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [activeTestSubject, setActiveTestSubject] = useState<SubjectType | null>(null);
@@ -227,9 +235,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (
         error?.code === 'unavailable' ||
         error?.message?.includes('unavailable') ||
-        error?.message?.includes('offline')
+        error?.message?.includes('offline') ||
+        collectionName === 'systemSettings'
       ) {
-        console.warn(`[Firestore] Operating in offline cache mode for "${collectionName}":`, error.message);
+        console.warn(`[Firestore] Operating with local cache/fallback for "${collectionName}":`, error?.message || error);
         return;
       }
       handleFirestoreError(error, OperationType.LIST, collectionName);
@@ -315,13 +324,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
 
     // 4. Notifications listener
+    const knownNotifIds = new Set<string>();
+    let isInitialNotifSync = true;
+
     const unsubNotifs = onSnapshot(
       collection(db, 'notifications'),
       (snapshot) => {
         const nList: NotificationItem[] = [];
         snapshot.forEach((docSnap) => {
-          nList.push({ id: docSnap.id, ...docSnap.data() } as NotificationItem);
+          const item = { id: docSnap.id, ...docSnap.data() } as NotificationItem;
+          nList.push(item);
+
+          // If new notification arrived after initial load, trigger toastify
+          if (!isInitialNotifSync && !knownNotifIds.has(item.id) && !item.read) {
+            const isForMe = !item.userId || item.userId === 'all' || (currentUser && item.userId === currentUser.id);
+            if (isForMe) {
+              const msg = language === 'ar' && item.messageAr ? item.messageAr : item.message;
+              const title = language === 'ar' && item.titleAr ? item.titleAr : item.title;
+              toast.info(`${title}: ${msg}`);
+            }
+          }
         });
+
+        nList.forEach((n) => knownNotifIds.add(n.id));
+        isInitialNotifSync = false;
         setNotifications(nList);
       },
       (error) => {
@@ -383,6 +409,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     );
 
+    // 8. System Settings listener (e.g. scratch availability)
+    const unsubSettings = onSnapshot(
+      doc(db, 'systemSettings', 'general'),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (typeof data.scratchAvailable === 'boolean') {
+            setScratchAvailable(data.scratchAvailable);
+            localStorage.setItem('learn_scratch_available', String(data.scratchAvailable));
+          }
+        } else {
+          setDoc(doc(db, 'systemSettings', 'general'), { scratchAvailable: true }, { merge: true }).catch(() => {});
+        }
+      },
+      (error) => {
+        safeHandleSnapshotError(error, 'systemSettings');
+      }
+    );
+
     return () => {
       unsubUsers();
       unsubGroups();
@@ -391,16 +436,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       unsubCareer();
       unsubInquiries();
       unsubPrograms();
+      unsubSettings();
     };
-  }, []);
+  }, [currentUser, language]);
 
-  const showToast = (type: 'success' | 'error' | 'info', messageEn: string, messageAr?: string) => {
+  const showToast = (type: 'success' | 'error' | 'info' | 'warning', messageEn: string, messageAr?: string) => {
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 5);
     const msg = language === 'ar' && messageAr ? messageAr : messageEn;
-    setToasts((prev) => [...prev, { id, type, message: msg, messageAr }]);
+    setToasts((prev) => [...prev, { id, type: type === 'warning' ? 'info' : type, message: msg, messageAr }]);
     setTimeout(() => {
       removeToast(id);
     }, 4500);
+
+    // Trigger genuine React-Toastify notification
+    if (type === 'success') {
+      toast.success(msg);
+    } else if (type === 'error') {
+      toast.error(msg);
+    } else if (type === 'warning') {
+      toast.warning(msg);
+    } else {
+      toast.info(msg);
+    }
+  };
+
+  const toggleScratchAvailability = async (): Promise<void> => {
+    const nextState = !scratchAvailable;
+    setScratchAvailable(nextState);
+    localStorage.setItem('learn_scratch_available', String(nextState));
+    try {
+      await setDoc(doc(db, 'systemSettings', 'general'), { scratchAvailable: nextState }, { merge: true });
+    } catch (err) {
+      console.warn('[Firestore] Error syncing scratch availability:', err);
+    }
+
+    if (nextState) {
+      showToast(
+        'success',
+        'Scratch Programming curriculum is now AVAILABLE across the platform!',
+        'مسار برمجة سكراتش متاح الآن ونشط على جميع صفحات المنصة!'
+      );
+    } else {
+      showToast(
+        'info',
+        'Scratch Programming curriculum has been set to UNAVAILABLE (Registration Paused).',
+        'تم تعيين مسار برمجة سكراتش كـ غير متاح حالياً (إيقاف التسجيل مؤقتاً).'
+      );
+    }
   };
 
   const removeToast = (id: string) => {
@@ -540,8 +622,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateStudentLevel = async (userId: string, subject: SubjectType, score: number, levelStr: string) => {
-    const keyScore = subject === 'math' ? 'scoreMath' : subject === 'arabic' ? 'scoreArabic' : 'scoreEnglish';
-    const keyLevel = subject === 'math' ? 'levelMath' : subject === 'arabic' ? 'levelArabic' : 'levelEnglish';
+    const keyScore =
+      subject === 'math'
+        ? 'scoreMath'
+        : subject === 'arabic'
+        ? 'scoreArabic'
+        : subject === 'english'
+        ? 'scoreEnglish'
+        : 'scoreScratch';
+    const keyLevel =
+      subject === 'math'
+        ? 'levelMath'
+        : subject === 'arabic'
+        ? 'levelArabic'
+        : subject === 'english'
+        ? 'levelEnglish'
+        : 'levelScratch';
 
     const updates = {
       [keyScore]: score,
@@ -836,6 +932,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toasts,
         showToast,
         removeToast,
+        scratchAvailable,
+        toggleScratchAvailability,
         registerOrLoginUser,
         updateUser,
         deleteUser,

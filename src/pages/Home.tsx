@@ -15,11 +15,13 @@ import {
   ArrowRight,
   ShieldAlert,
   Star,
-  Play
+  Play,
+  Code,
+  AlertCircle
 } from 'lucide-react';
 
 export const Home: React.FC = () => {
-  const { language, setActiveTestSubject, navigate, currentUser, programs } = useApp();
+  const { language, setActiveTestSubject, navigate, currentUser, programs, scratchAvailable, showToast } = useApp();
   const t = translations[language];
 
   const handleStartTest = (subject: SubjectType) => {
@@ -36,9 +38,24 @@ export const Home: React.FC = () => {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-6xl mx-auto relative z-10 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-amber-300 text-xs sm:text-sm font-black shadow-inner backdrop-blur-md glow-element">
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>{t.welcomeMessage}</span>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-amber-300 text-xs sm:text-sm font-black shadow-inner backdrop-blur-md glow-element">
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>{t.welcomeMessage}</span>
+            </div>
+
+            {/* Announcement that users can learn Scratch too */}
+            {scratchAvailable ? (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/25 border border-orange-300/40 text-orange-200 text-xs sm:text-sm font-bold shadow-inner backdrop-blur-md">
+                <Code className="w-4 h-4 text-orange-300 animate-pulse" />
+                <span>{language === 'ar' ? '🚀 يمكنك تعلّم برمجة سكراتش وتطوير الألعاب معنا أيضاً!' : '🚀 You can learn Scratch coding & game development too!'}</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-slate-200 text-xs font-semibold backdrop-blur-md">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-300" />
+                <span>{language === 'ar' ? '⚠️ مسار برمجة سكراتش: التسجيل متوقف مؤقتاً بواسطة الإدارة' : '⚠️ Scratch Coding: Enrollment temporarily paused by Admin'}</span>
+              </div>
+            )}
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight max-w-4xl mx-auto text-white">
@@ -71,6 +88,29 @@ export const Home: React.FC = () => {
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 rtl:rotate-180 shrink-0" />
             </button>
 
+            {/* Scratch Learn / Diagnostic Test Quick CTA */}
+            <button
+              onClick={() => {
+                if (scratchAvailable) {
+                  handleStartTest('scratch');
+                } else {
+                  showToast('info', 'Scratch coding track is currently unavailable. Check back soon!', 'مسار برمجة سكراتش غير متاح حالياً. يرجى المتابعة لاحقاً!');
+                }
+              }}
+              className={`w-full sm:w-auto px-5 sm:px-7 py-3.5 sm:py-4 rounded-2xl font-black text-sm sm:text-base shadow-xl flex items-center justify-center gap-2 transition-all glow-btn ${
+                scratchAvailable
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white'
+                  : 'bg-white/10 opacity-70 text-slate-200 cursor-not-allowed border border-white/20'
+              }`}
+            >
+              <Code className="w-5 h-5 text-amber-200 shrink-0" />
+              <span>
+                {language === 'ar'
+                  ? (scratchAvailable ? 'تعلّم سكراتش (اختبار)' : 'برمجة سكراتش (معطّلة)')
+                  : (scratchAvailable ? 'Learn Scratch' : 'Scratch (Unavailable)')}
+              </span>
+            </button>
+
             <button
               onClick={() => handleStartTest('math')}
               className="w-full sm:w-auto px-5 sm:px-7 py-3.5 sm:py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 backdrop-blur-md transition-all glow-btn"
@@ -82,7 +122,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* THREE CORE LEVEL TESTS SECTION (Directly on Homepage as requested) */}
+      {/* CORE SUBJECTS & SCRATCH LEVEL TESTS SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300 text-amber-200 text-xs font-bold">
@@ -94,14 +134,14 @@ export const Home: React.FC = () => {
               ? 'اختبارات تحديد المستوى المباشرة'
               : 'Interactive Diagnostic Level Tests'}
           </h2>
-          <p className="text-sm sm:text-base text-indigo-100 max-w-xl mx-auto">
+          <p className="text-sm sm:text-base text-indigo-100 max-w-2xl mx-auto">
             {language === 'ar'
-              ? 'حدد مستواك في المواد الأساسية الثلاث للحصول على توصيات دراسية مخصصة'
-              : 'Evaluate your current level in our three core academy subjects to unlock tailored live group sessions'}
+              ? 'حدد مستواك في الرياضيات، اللغة العربية، اللغة الإنجليزية، وبرمجة سكراتش للحصول على توصيات دراسية مخصصة'
+              : 'Evaluate your current level in Math, Arabic, English, and Scratch Coding to unlock tailored live group sessions'}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           
           {/* Math Level Test Card */}
           <div className="bg-white rounded-3xl p-8 shadow-xl border border-purple-100 flex flex-col justify-between glow-card relative overflow-hidden group">
@@ -199,6 +239,64 @@ export const Home: React.FC = () => {
                 <span>{t.startTest}</span>
                 <ArrowRight className="w-4 h-4 rtl:rotate-180" />
               </button>
+            </div>
+          </div>
+
+          {/* Scratch Coding Level Test Card */}
+          <div className={`bg-white rounded-3xl p-8 shadow-xl border flex flex-col justify-between glow-card relative overflow-hidden group transition-all ${
+            scratchAvailable ? 'border-orange-200 hover:border-orange-400' : 'border-slate-200'
+          }`}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/10 rounded-full blur-2xl pointer-events-none" />
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${
+                  scratchAvailable ? 'bg-orange-100 border border-orange-200 text-orange-600' : 'bg-slate-100 text-slate-400'
+                }`}>
+                  <Code className="w-8 h-8" />
+                </div>
+                <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${
+                  scratchAvailable ? 'bg-orange-50 text-orange-700 border border-orange-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                }`}>
+                  {scratchAvailable ? (language === 'ar' ? 'متاح الآن' : 'Available') : (language === 'ar' ? 'غير متاح حالياً' : 'Paused by Admin')}
+                </span>
+              </div>
+
+              <h3 className="text-2xl font-black text-slate-800">
+                {t.scratchTest || (language === 'ar' ? 'اختبار مستوى سكراتش' : 'Scratch Coding Test')}
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {t.testDescScratch || (language === 'ar' ? 'تقييم مفاهيم البرمجة بالسحب والإفلات، الكائنات، الحلقات، ومنطق الألعاب.' : 'Assess block coding logic, sprites, loops, sensing, and game development.')}
+              </p>
+              <ul className="space-y-2 text-xs font-semibold text-slate-500 pt-2">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" />
+                  <span>{language === 'ar' ? 'برمجة الكائنات والألعاب التفاعلية' : 'Block Coding & Sprites Interaction'}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" />
+                  <span>{language === 'ar' ? 'الحلقات والشروط والمؤثرات' : 'Loops, Conditionals & Game Physics'}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="pt-8">
+              {scratchAvailable ? (
+                <button
+                  onClick={() => handleStartTest('scratch')}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-black text-sm shadow-md flex items-center justify-center gap-2 transition-all glow-btn"
+                >
+                  <span>{t.startTest}</span>
+                  <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="w-full py-3.5 rounded-2xl bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200"
+                >
+                  <span>{language === 'ar' ? 'غير متاح حالياً (معطّل)' : 'Currently Unavailable (Paused)'}</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -351,33 +449,42 @@ export const Home: React.FC = () => {
           </h2>
           <p className="text-sm sm:text-base text-indigo-100 max-w-2xl mx-auto">
             {language === 'ar'
-              ? 'مناهج متكاملة في الرياضيات واللغة العربية واللغة الإنجليزية مصممة لتطوير المهارات الذهنية والتواصل اللغوي'
-              : 'Tailored live interactive curricula designed to build problem solving, literacy, and fluency.'}
+              ? 'مناهج متكاملة في الرياضيات، اللغة العربية، اللغة الإنجليزية، وبرمجة سكراتش وتطوير الألعاب'
+              : 'Tailored live interactive curricula designed to build problem solving, literacy, fluency, and Scratch coding skills.'}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {programs.map((prog) => {
             const isMath = prog.subject === 'Math';
             const isArabic = prog.subject === 'Arabic';
+            const isScratch = prog.subject === 'Scratch';
+            const isUnavailable = isScratch && !scratchAvailable;
+
             const themeColor = isMath
               ? { bg: 'bg-amber-100', text: 'text-amber-600', btn: 'bg-amber-400 hover:bg-amber-300 text-slate-950' }
               : isArabic
               ? { bg: 'bg-emerald-100', text: 'text-emerald-600', btn: 'bg-emerald-500 hover:bg-emerald-400 text-white' }
+              : isScratch
+              ? { bg: 'bg-orange-100', text: 'text-orange-600', btn: 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white' }
               : { bg: 'bg-indigo-100', text: 'text-indigo-600', btn: 'bg-indigo-600 hover:bg-indigo-500 text-white' };
 
             return (
               <div
                 key={prog.id}
-                className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex flex-col justify-between space-y-5 glow-card text-slate-800 relative overflow-hidden"
+                className={`bg-white rounded-3xl p-7 shadow-xl border flex flex-col justify-between space-y-5 glow-card text-slate-800 relative overflow-hidden transition-all ${
+                  isUnavailable ? 'border-slate-200 opacity-80' : 'border-slate-100'
+                }`}
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className={`w-12 h-12 rounded-2xl ${themeColor.bg} ${themeColor.text} flex items-center justify-center font-black`}>
-                      {isMath ? <Calculator className="w-6 h-6" /> : isArabic ? <BookOpen className="w-6 h-6" /> : <Languages className="w-6 h-6" />}
+                    <div className={`w-12 h-12 rounded-2xl ${themeColor.bg} ${themeColor.text} flex items-center justify-center font-black shadow-sm`}>
+                      {isMath ? <Calculator className="w-6 h-6" /> : isArabic ? <BookOpen className="w-6 h-6" /> : isScratch ? <Code className="w-6 h-6" /> : <Languages className="w-6 h-6" />}
                     </div>
-                    <span className="text-xs font-black px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-                      {prog.schedule}
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${
+                      isUnavailable ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-700'
+                    }`}>
+                      {isUnavailable ? (language === 'ar' ? 'غير متاح حالياً' : 'Paused by Admin') : prog.schedule}
                     </span>
                   </div>
 
@@ -406,15 +513,24 @@ export const Home: React.FC = () => {
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
                   <div className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg">
-                    {prog.price}
+                    {isUnavailable ? (language === 'ar' ? 'التسجيل معطّل' : 'Unavailable') : prog.price}
                   </div>
-                  <button
-                    onClick={() => navigate('/ads')}
-                    className={`py-2.5 px-4 rounded-xl font-extrabold text-xs shadow flex items-center gap-1.5 glow-btn cursor-pointer ${themeColor.btn}`}
-                  >
-                    <span>{language === 'ar' ? 'انضم الآن' : 'Join Now'}</span>
-                    <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                  </button>
+                  {isUnavailable ? (
+                    <button
+                      disabled
+                      className="py-2 px-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                    >
+                      <span>{language === 'ar' ? 'غير متاح' : 'Unavailable'}</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate('/ads')}
+                      className={`py-2.5 px-4 rounded-xl font-extrabold text-xs shadow flex items-center gap-1.5 glow-btn cursor-pointer ${themeColor.btn}`}
+                    >
+                      <span>{language === 'ar' ? 'انضم الآن' : 'Join Now'}</span>
+                      <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
+                    </button>
+                  )}
                 </div>
               </div>
             );

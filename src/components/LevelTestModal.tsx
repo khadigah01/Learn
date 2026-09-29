@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { SubjectType } from '../types';
-import { mathQuestions, arabicQuestions, englishQuestions } from '../data/levelTestsData';
+import { mathQuestions, arabicQuestions, englishQuestions, scratchQuestions } from '../data/levelTestsData';
 import { translations } from '../utils/translations';
 import confetti from 'canvas-confetti';
 import {
@@ -14,7 +14,8 @@ import {
   ArrowRight,
   Calculator,
   BookOpen,
-  Languages
+  Languages,
+  Code
 } from 'lucide-react';
 
 interface Props {
@@ -31,22 +32,28 @@ export const LevelTestModal: React.FC<Props> = ({ subject, onClose }) => {
       ? mathQuestions
       : subject === 'arabic'
       ? arabicQuestions
-      : englishQuestions;
+      : subject === 'english'
+      ? englishQuestions
+      : scratchQuestions;
 
   const subjectTitle =
     subject === 'math'
       ? t.mathTest
       : subject === 'arabic'
       ? t.arabicTest
-      : t.englishTest;
+      : subject === 'english'
+      ? t.englishTest
+      : (t.scratchTest || (language === 'ar' ? 'اختبار مستوى برمجة سكراتش' : 'Scratch Coding Level Test'));
 
   const subjectIcon =
     subject === 'math' ? (
       <Calculator className="w-6 h-6 text-amber-500" />
     ) : subject === 'arabic' ? (
       <BookOpen className="w-6 h-6 text-emerald-500" />
-    ) : (
+    ) : subject === 'english' ? (
       <Languages className="w-6 h-6 text-indigo-500" />
+    ) : (
+      <Code className="w-6 h-6 text-orange-400" />
     );
 
   const [currentIndex, setCurrentIndex] = useState(0);

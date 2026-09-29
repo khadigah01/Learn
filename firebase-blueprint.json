@@ -152,6 +152,14 @@
         "repliedAt": { "type": "string" }
       },
       "required": ["id", "senderName", "channel", "content", "status"]
+    },
+    "SystemSetting": {
+      "title": "System Setting",
+      "description": "Global application configuration settings such as scratch availability",
+      "type": "object",
+      "properties": {
+        "scratchAvailable": { "type": "boolean" }
+      }
     }
   },
   "firestore": {
@@ -182,6 +190,10 @@
     "/inquiries/{inquiryId}": {
       "schema": "InquiryMessage",
       "description": "Inquiries and questions communication collection"
+    },
+    "/systemSettings/{settingId}": {
+      "schema": "SystemSetting",
+      "description": "System settings collection"
     }
   }
 }

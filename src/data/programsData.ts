@@ -78,5 +78,31 @@ export const initialProgramsData: ProgramItem[] = [
       'ألعاب تفاعلية واختبارات قياس مستوى',
       'تقارير شهرية مفصلة لولي الأمر'
     ]
+  },
+  {
+    id: 'prog_scratch_coding',
+    titleEn: 'Scratch Coding & Creative Game Development',
+    titleAr: 'برمجة سكراتش وتطوير الألعاب والرسوم التفاعلية',
+    subject: 'Scratch',
+    stage: 'Foundations & Primary to Prep',
+    stageAr: 'لجميع المراحل (التأسيس حتى الإعدادي)',
+    ageRange: '7 - 16 Years',
+    schedule: '2 Sessions / Week',
+    sessionsCount: '16 Live Sessions',
+    price: 'Free Trial Available',
+    descriptionEn: 'Learn computational thinking, logic, animation, and game design using MIT Scratch block-based visual programming.',
+    descriptionAr: 'تعلّم التفكير المنطقي والبرمجي وصناعة الألعاب والرسوم المتحركة التفاعلية باستخدام لغة سكراتش من MIT.',
+    featuresEn: [
+      'MIT Scratch 3.0 visual block coding',
+      'Build 8+ complete arcade & puzzle games',
+      'Animation, sound effects & character design',
+      'Live interactive project showcase & certificate'
+    ],
+    featuresAr: [
+      'برمجة تفاعلية بالبلوكات المرئية مع منصة MIT سكراتش 3.0',
+      'بناء أكثر من 8 ألعاب كاملة ورسوم متحركة',
+      'تصميم الشخصيات وإضافة الأصوات والمؤثرات',
+      'عرض مشاريع حي وشهادة إتمام معتمدة'
+    ]
   }
 ];

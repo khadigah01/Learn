@@ -13,15 +13,17 @@ export interface User {
   levelMath?: string;
   levelArabic?: string;
   levelEnglish?: string;
+  levelScratch?: string;
   scoreMath?: number;
   scoreArabic?: number;
   scoreEnglish?: number;
+  scoreScratch?: number;
 }
 
 export interface StudentGroup {
   id: string;
   name: string;
-  subject: 'Math' | 'Arabic' | 'English' | 'General';
+  subject: 'Math' | 'Arabic' | 'English' | 'Scratch' | 'General';
   teacherId?: string;
   teacherName?: string;
   coordinatorId?: string;
@@ -34,7 +36,7 @@ export interface StudentGroup {
 export interface LiveMeeting {
   id: string;
   title: string;
-  subject: 'Math' | 'Arabic' | 'English' | 'General';
+  subject: 'Math' | 'Arabic' | 'English' | 'Scratch' | 'General';
   groupId?: string;
   groupName?: string;
   teacherId: string;
@@ -70,7 +72,7 @@ export interface TestQuestion {
   correctIndex: number;
 }
 
-export type SubjectType = 'math' | 'arabic' | 'english';
+export type SubjectType = 'math' | 'arabic' | 'english' | 'scratch';
 
 export interface TestResult {
   subject: SubjectType;
@@ -144,7 +146,7 @@ export interface ProgramItem {
   id: string;
   titleEn: string;
   titleAr: string;
-  subject: 'Math' | 'Arabic' | 'English';
+  subject: 'Math' | 'Arabic' | 'English' | 'Scratch';
   stage: string;
   stageAr: string;
   ageRange: string;

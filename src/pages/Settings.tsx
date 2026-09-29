@@ -20,7 +20,9 @@ import {
   Smartphone,
   Mail,
   ExternalLink,
-  Send
+  Send,
+  Code,
+  Power
 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
@@ -32,7 +34,9 @@ export const Settings: React.FC = () => {
     updateUser,
     forwardEmailNotification,
     showToast,
-    navigate
+    navigate,
+    scratchAvailable,
+    toggleScratchAvailability
   } = useApp();
 
   // Local settings state with localStorage fallback
@@ -613,7 +617,125 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* 6. Danger & Reset Zone */}
+        {/* 6. Admin Control: Scratch Curriculum Availability Toggle */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-200 shadow-md space-y-6 glow-card">
+          <div className="flex items-center justify-between border-b border-orange-100 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center border border-orange-200">
+                <Code className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-black text-slate-900">
+                    {language === 'ar' ? 'إدارة توفر مسار برمجة سكراتش (Scratch)' : 'Scratch Curriculum Availability Control'}
+                  </h2>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                    scratchAvailable
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                      : 'bg-rose-100 text-rose-800 border border-rose-300'
+                  }`}>
+                    {scratchAvailable ? (language === 'ar' ? 'متاح الآن' : 'Available / Active') : (language === 'ar' ? 'غير متاح / معطّل' : 'Unavailable / Paused')}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {language === 'ar'
+                    ? 'التحكم في إتاحة دورات واختبارات برمجة سكراتش للطلاب والزوار عبر الموقع بأكمله'
+                    : 'Toggle whether students and visitors can enroll in Scratch coding courses and take diagnostic tests'}
+                </p>
+              </div>
+            </div>
+
+            <div className="hidden sm:block">
+              <span className="text-[11px] font-bold text-slate-400">
+                {language === 'ar' ? 'صلاحيات المسؤول (Admin)' : 'Admin System Control'}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-orange-50/50 border border-orange-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <span>
+                  {scratchAvailable
+                    ? (language === 'ar' ? 'مسار سكراتش متاح حالياً للجميع' : 'Scratch is currently AVAILABLE on the website')
+                    : (language === 'ar' ? 'مسار سكراتش معطّل وغير متاح للجمهور' : 'Scratch is currently marked UNAVAILABLE')}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600">
+                {scratchAvailable
+                  ? (language === 'ar'
+                      ? 'يمكن للطلاب رؤية مسار سكراتش وخوض اختبار تحديد المستوى والتسجيل في الحصص.'
+                      : 'Students can see the Scratch track on the homepage, take tests, and enroll.')
+                  : (language === 'ar'
+                      ? 'سيظهر مسار سكراتش كـ "غير متاح حالياً / التسجيل متوقف" للزوار والطلاب.'
+                      : 'The Scratch track will display as "Currently Unavailable / Paused by Admin".')}
+              </p>
+            </div>
+
+            <button
+              onClick={toggleScratchAvailability}
+              className={`px-5 py-2.5 rounded-xl font-black text-xs shadow-md flex items-center gap-2 transition-all glow-btn shrink-0 cursor-pointer ${
+                scratchAvailable
+                  ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              }`}
+            >
+              <Power className="w-4 h-4" />
+              <span>
+                {scratchAvailable
+                  ? (language === 'ar' ? 'تعطيل توفر سكراتش (Mark Unavailable)' : 'Disable Scratch (Mark Unavailable)')
+                  : (language === 'ar' ? 'تفعيل توفر سكراتش (Make Available)' : 'Enable Scratch (Make Available)')}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* 7. Notification System (Toastify Live Verification) */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md space-y-6 glow-card">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
+              <Bell className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-black text-slate-900">
+                  {language === 'ar' ? 'نظام الإشعارات التفاعلي (React-Toastify)' : 'Interactive Notification System (Toastify)'}
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">
+                  Toastify Powered
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                {language === 'ar'
+                  ? 'جميع إشعارات وتنبيهات الموقع تعتمد رسمياً على مكتبة Toastify'
+                  : 'All system notifications, alerts, and confirmations are powered by React-Toastify'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => showToast('success', 'Toastify Success: Everything is running smoothly!', 'إشعار Toastify بنجاح: النظام يعمل بكفاءة عالية!')}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow"
+            >
+              Test Success Toast
+            </button>
+            <button
+              onClick={() => showToast('info', 'Toastify Info: Real-time notification dispatched.', 'إشعار Toastify معلومات: تم إرسال التنبيه الفوري.')}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow"
+            >
+              Test Info Toast
+            </button>
+            <button
+              onClick={() => showToast('error', 'Toastify Error Alert: Sample warning simulation.', 'إشعار Toastify تنبيه: محاكاة تجربة الإشعار.')}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all shadow"
+            >
+              Test Error Toast
+            </button>
+          </div>
+        </div>
+
+        {/* 8. Danger & Reset Zone */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-md space-y-6 glow-card">
           <div className="flex items-center gap-3 border-b border-rose-50 pb-4">
             <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">

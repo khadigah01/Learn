@@ -128,3 +128,46 @@ export const englishQuestions: TestQuestion[] = [
     correctIndex: 1,
   },
 ];
+
+export const scratchQuestions: TestQuestion[] = [
+  {
+    id: 1,
+    questionEn: 'Which block starts code execution when the green flag is clicked?',
+    questionAr: 'أي لبنة برمجية تبدأ تشغيل المشروع عند النقر على العلم الأخضر؟',
+    optionsEn: ['when green flag clicked', 'when this sprite clicked', 'broadcast message', 'wait 1 second'],
+    optionsAr: ['عند النقر على العلم الأخضر', 'عند النقر على هذا الكائن', 'بث رسالة', 'انتظر 1 ثانية'],
+    correctIndex: 0,
+  },
+  {
+    id: 2,
+    questionEn: 'What is a "Sprite" (كائن) in Scratch?',
+    questionAr: 'ما هو "الكائن" (Sprite) في منصة سكراتش؟',
+    optionsEn: ['A sound effect', 'An interactive character or object on stage', 'The backdrop image', 'A numerical variable'],
+    optionsAr: ['مؤثر صوتي', 'شخصية أو عنصر تفاعلي على المنصة', 'صورة الخلفية الثابتة', 'متغير رقمي'],
+    correctIndex: 1,
+  },
+  {
+    id: 3,
+    questionEn: 'Which block category contains "move 10 steps" and "turn 15 degrees"?',
+    questionAr: 'أي قسم من أقسام اللبنات يحتوي على "تحرك 10 خطوات" و"استدر 15 درجة"؟',
+    optionsEn: ['Looks (المظهر)', 'Motion (الحركة)', 'Sound (الصوت)', 'Variables (المتغيرات)'],
+    optionsAr: ['المظهر (Looks)', 'الحركة (Motion)', 'الصوت (Sound)', 'المتغيرات (Variables)'],
+    correctIndex: 1,
+  },
+  {
+    id: 4,
+    questionEn: 'Which control block repeats the code blocks inside it without stopping?',
+    questionAr: 'أي لبنة تحكم تقوم بتكرار الأوامر التي بداخلها باستمرار دون توقف؟',
+    optionsEn: ['repeat 10', 'forever (كرر باستمرار)', 'if...then', 'wait until'],
+    optionsAr: ['كرر 10 مرات', 'كرر باستمرار (forever)', 'إذا...فـ', 'انتظر حتى'],
+    correctIndex: 1,
+  },
+  {
+    id: 5,
+    questionEn: 'Which sensing block detects if a sprite touches another object or color?',
+    questionAr: 'أي لبنة من لبنات التحسس تستخدم لمعرفة ما إذا كان الكائن يلامس كائناً آخر أو لوناً محدداً؟',
+    optionsEn: ['touching (sprite / color)?', 'mouse x', 'timer', 'ask and wait'],
+    optionsAr: ['ملامس لـ (كائن / لون)؟', 'موضع الفأرة س', 'المؤقت الزمني', 'اسأل وانتظر'],
+    correctIndex: 0,
+  },
+];

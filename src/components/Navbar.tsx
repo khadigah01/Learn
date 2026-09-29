@@ -41,7 +41,8 @@ export const Navbar: React.FC = () => {
     navigate,
     currentPath,
     showToast,
-    setActiveTestSubject
+    setActiveTestSubject,
+    scratchAvailable
   } = useApp();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -74,7 +75,7 @@ export const Navbar: React.FC = () => {
     }
   };
 
-  const handleStartTest = (subject: 'math' | 'arabic' | 'english') => {
+  const handleStartTest = (subject: 'math' | 'arabic' | 'english' | 'scratch') => {
     setMenuOpen(false);
     if (currentPath !== '/') {
       navigate('/');
@@ -218,6 +219,23 @@ export const Navbar: React.FC = () => {
       icon: Sparkles,
       badge: 'Modal Test',
       action: () => handleStartTest('english')
+    },
+    {
+      category: 'interactive',
+      titleEn: 'Scratch Coding Diagnostic Test',
+      titleAr: 'اختبار تحديد مستوى برمجة سكراتش',
+      descEn: 'Evaluate block-based logic, sprites, loops, and game mechanics',
+      descAr: 'تقييم مفاهيم البرمجة بالسحب والإفلات وتطوير ألعاب سكراتش',
+      route: 'Test: Scratch',
+      icon: Sparkles,
+      badge: scratchAvailable ? 'Active' : 'Unavailable',
+      action: () => {
+        if (scratchAvailable) {
+          handleStartTest('scratch');
+        } else {
+          showToast('info', 'Scratch program is currently paused by admin.', 'مسار سكراتش متوقف مؤقتاً بواسطة الإدارة.');
+        }
+      }
     },
 
     // 3. Communication Channels & Inquiries

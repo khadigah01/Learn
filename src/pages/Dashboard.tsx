@@ -30,7 +30,9 @@ import {
   Send,
   Check,
   Layers,
-  FileText
+  FileText,
+  Code,
+  Power
 } from 'lucide-react';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -66,7 +68,9 @@ export const Dashboard: React.FC = () => {
     setActiveTestSubject,
     setActiveMeetingRoom,
     showToast,
-    navigate
+    navigate,
+    scratchAvailable,
+    toggleScratchAvailability
   } = useApp();
 
   const t = translations[language];
@@ -493,6 +497,52 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* ADMIN QUICK CONTROL BAR: Scratch Curriculum Availability */}
+      {isAdmin && (
+        <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-orange-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glow-card">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black ${
+              scratchAvailable ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'
+            }`}>
+              <Code className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-base font-black text-slate-900">
+                  {language === 'ar' ? 'إتاحة مسار برمجة سكراتش (Scratch):' : 'Scratch Programming Track Availability:'}
+                </h4>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase ${
+                  scratchAvailable ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
+                }`}>
+                  {scratchAvailable ? (language === 'ar' ? 'متاح الآن' : 'Available') : (language === 'ar' ? 'غير متاح / معطّل' : 'Unavailable')}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {scratchAvailable
+                  ? (language === 'ar' ? 'مسار سكراتش ظاهر للطلاب ومتاح للتسجيل وإجراء الاختبار.' : 'Scratch is visible on home, level tests, and open for student enrollment.')
+                  : (language === 'ar' ? 'مسار سكراتش معطّل ومغلق حالياً ويظهر كـ "غير متاح" للزوار.' : 'Scratch is paused and displayed as "Currently Unavailable" on the site.')}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={toggleScratchAvailability}
+            className={`px-5 py-2.5 rounded-xl font-black text-xs shadow-md flex items-center gap-2 transition-all glow-btn shrink-0 cursor-pointer ${
+              scratchAvailable
+                ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+            }`}
+          >
+            <Power className="w-4 h-4" />
+            <span>
+              {scratchAvailable
+                ? (language === 'ar' ? 'تعطيل سكراتش (Mark Unavailable)' : 'Disable Scratch (Mark Unavailable)')
+                : (language === 'ar' ? 'تفعيل سكراتش (Make Available)' : 'Enable Scratch (Make Available)')}
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* STUDENT SPECIFIC DASHBOARD VIEW */}
       {isStudent && (
         <div className="space-y-8">
@@ -511,7 +561,7 @@ export const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Math Level Status */}
               <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 flex flex-col justify-between space-y-3">
                 <div className="flex items-center justify-between">
@@ -567,6 +617,34 @@ export const Dashboard: React.FC = () => {
                 >
                   {t.takeTestNow}
                 </button>
+              </div>
+
+              {/* Scratch Level Status */}
+              <div className="p-5 rounded-2xl bg-orange-50/70 border border-orange-200 flex flex-col justify-between space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Code className="w-5 h-5 text-orange-600" />
+                    <span className="font-extrabold text-slate-800">{t.scratchTest || 'Scratch Coding'}</span>
+                  </div>
+                  <span className="text-xs font-black text-orange-700 bg-orange-200/80 px-2.5 py-0.5 rounded-full">
+                    {currentUser.levelScratch || 'Not Taken'}
+                  </span>
+                </div>
+                {scratchAvailable ? (
+                  <button
+                    onClick={() => setActiveTestSubject('scratch')}
+                    className="w-full py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-extrabold text-xs shadow transition-all glow-btn"
+                  >
+                    {t.takeTestNow}
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-400 font-bold text-xs cursor-not-allowed border border-slate-200"
+                  >
+                    {language === 'ar' ? 'معطّل حالياً' : 'Unavailable'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1151,6 +1229,8 @@ export const Dashboard: React.FC = () => {
                           ? { bg: 'bg-amber-100 text-amber-800 border-amber-200', icon: Calculator }
                           : prog.subject === 'Arabic'
                           ? { bg: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: BookOpen }
+                          : prog.subject === 'Scratch'
+                          ? { bg: 'bg-orange-100 text-orange-800 border-orange-200', icon: Code }
                           : { bg: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: Languages };
                       const IconComp = subjectBadge.icon;
 
