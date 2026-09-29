@@ -32,12 +32,14 @@ import {
   Layers,
   FileText,
   Code,
-  Power
+  Power,
+  Award
 } from 'lucide-react';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { TeacherQuizManager } from '../components/TeacherQuizManager';
 import { QuizPlayerModal } from '../components/QuizPlayerModal';
+import { CertificateManager } from '../components/CertificateManager';
 
 export const Dashboard: React.FC = () => {
   const {
@@ -83,7 +85,7 @@ export const Dashboard: React.FC = () => {
   const isCoordinator = currentUser?.role === 'coordinator';
   const isStudent = currentUser?.role === 'student';
 
-  const [activeTab, setActiveTab] = useState<'meetings' | 'groups' | 'students' | 'users' | 'programs' | 'inquiries' | 'careers' | 'quizzes'>(
+  const [activeTab, setActiveTab] = useState<'meetings' | 'groups' | 'students' | 'users' | 'programs' | 'inquiries' | 'careers' | 'quizzes' | 'certificates'>(
     'meetings'
   );
   const [takingQuiz, setTakingQuiz] = useState<any | null>(null);
@@ -733,6 +735,9 @@ export const Dashboard: React.FC = () => {
           {/* TEACHER ASSIGNED QUIZZES & TESTS (SQLite) */}
           <TeacherQuizManager onTakeQuiz={(quiz) => setTakingQuiz(quiz)} />
 
+          {/* STUDENT ACADEMIC CERTIFICATES & HONORS (SQLite) */}
+          <CertificateManager filterStudentId={currentUser?.id} isReadOnly={true} />
+
         </div>
       )}
 
@@ -785,6 +790,17 @@ export const Dashboard: React.FC = () => {
                 }`}
               >
                 {language === 'ar' ? 'الاختبارات والتقييمات (SQLite)' : 'Quizzes & Tests (SQLite)'}
+              </button>
+
+              <button
+                onClick={() => setActiveTab('certificates')}
+                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all glow-btn ${
+                  activeTab === 'certificates'
+                    ? 'bg-amber-400 text-slate-950 shadow'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                {language === 'ar' ? 'الشهادات والجوائز (SQLite)' : 'Certificates & Honors (SQLite)'}
               </button>
 
               {isAdmin && (
@@ -1522,6 +1538,11 @@ export const Dashboard: React.FC = () => {
             <TeacherQuizManager onTakeQuiz={(quiz) => setTakingQuiz(quiz)} />
           )}
 
+          {/* CERTIFICATES & HONORS TAB (SQLite) */}
+          {activeTab === 'certificates' && (
+            <CertificateManager />
+          )}
+
         </div>
       )}
 
@@ -1712,7 +1733,7 @@ export const Dashboard: React.FC = () => {
               <div className="border-t border-slate-100 pt-3 space-y-3">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Subject Levels & Scores</span>
                 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div>
                     <label className="block text-[11px] font-bold text-amber-700 mb-1">Math Level</label>
                     <input
@@ -1721,6 +1742,15 @@ export const Dashboard: React.FC = () => {
                       onChange={(e) => setEditUserModalData({ ...editUserModalData, levelMath: e.target.value })}
                       placeholder="e.g. Advanced"
                       className="w-full p-2 bg-amber-50/50 border border-amber-200 rounded-lg text-xs font-bold text-amber-900"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={editUserModalData.scoreMath ?? ''}
+                      onChange={(e) => setEditUserModalData({ ...editUserModalData, scoreMath: e.target.value === '' ? undefined : Number(e.target.value) })}
+                      placeholder="Score %"
+                      className="w-full mt-1 p-1.5 bg-white border border-amber-200 rounded-lg text-xs"
                     />
                   </div>
 
@@ -1733,6 +1763,15 @@ export const Dashboard: React.FC = () => {
                       placeholder="e.g. Intermediate"
                       className="w-full p-2 bg-emerald-50/50 border border-emerald-200 rounded-lg text-xs font-bold text-emerald-900"
                     />
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={editUserModalData.scoreArabic ?? ''}
+                      onChange={(e) => setEditUserModalData({ ...editUserModalData, scoreArabic: e.target.value === '' ? undefined : Number(e.target.value) })}
+                      placeholder="Score %"
+                      className="w-full mt-1 p-1.5 bg-white border border-emerald-200 rounded-lg text-xs"
+                    />
                   </div>
 
                   <div>
@@ -1743,6 +1782,35 @@ export const Dashboard: React.FC = () => {
                       onChange={(e) => setEditUserModalData({ ...editUserModalData, levelEnglish: e.target.value })}
                       placeholder="e.g. Beginner"
                       className="w-full p-2 bg-indigo-50/50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-900"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={editUserModalData.scoreEnglish ?? ''}
+                      onChange={(e) => setEditUserModalData({ ...editUserModalData, scoreEnglish: e.target.value === '' ? undefined : Number(e.target.value) })}
+                      placeholder="Score %"
+                      className="w-full mt-1 p-1.5 bg-white border border-indigo-200 rounded-lg text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-orange-700 mb-1">Scratch Level</label>
+                    <input
+                      type="text"
+                      value={editUserModalData.levelScratch || ''}
+                      onChange={(e) => setEditUserModalData({ ...editUserModalData, levelScratch: e.target.value })}
+                      placeholder="e.g. Advanced"
+                      className="w-full p-2 bg-orange-50/50 border border-orange-200 rounded-lg text-xs font-bold text-orange-900"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={editUserModalData.scoreScratch ?? ''}
+                      onChange={(e) => setEditUserModalData({ ...editUserModalData, scoreScratch: e.target.value === '' ? undefined : Number(e.target.value) })}
+                      placeholder="Score %"
+                      className="w-full mt-1 p-1.5 bg-white border border-orange-200 rounded-lg text-xs"
                     />
                   </div>
                 </div>

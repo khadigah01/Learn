@@ -66,6 +66,22 @@ export async function getSqliteDb(): Promise<Database> {
       answers_json TEXT NOT NULL,
       submitted_at INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS certificates (
+      id TEXT PRIMARY KEY,
+      student_id TEXT NOT NULL,
+      student_name TEXT NOT NULL,
+      teacher_id TEXT NOT NULL,
+      teacher_name TEXT NOT NULL,
+      title TEXT NOT NULL,
+      title_ar TEXT,
+      subject TEXT NOT NULL,
+      distinction TEXT NOT NULL,
+      issue_date TEXT NOT NULL,
+      notes TEXT,
+      theme TEXT DEFAULT 'gold',
+      created_at INTEGER NOT NULL
+    );
   `);
 
   // Seed default data if empty
@@ -290,6 +306,68 @@ function seedDefaults(db: Database) {
           q.time_limit_minutes,
           q.questions_json,
           q.created_at
+        ]
+      );
+    }
+  }
+
+  // Check if certificates exist
+  const certCount = db.exec('SELECT COUNT(*) as cnt FROM certificates');
+  const cCount = certCount[0]?.values[0]?.[0] as number;
+  if (!cCount || cCount === 0) {
+    console.log('[SQLite] Seeding sample student certificates...');
+    const now = Date.now();
+    const sampleCerts = [
+      {
+        id: 'cert_sample_1',
+        student_id: 'user_tariq',
+        student_name: 'Tariq Al-Mansoor',
+        teacher_id: 'teacher_1',
+        teacher_name: 'Mr. Ahmed (Computer Science)',
+        title: 'Certificate of Excellence in Scratch Programming & Game Design',
+        title_ar: 'شهادة تميز في برمجة سكراتش وتطوير الألعاب التفاعلية',
+        subject: 'Scratch Coding',
+        distinction: 'With Distinction (امتياز مع مرتبة الشرف)',
+        issue_date: 'September 2026',
+        notes: 'Awarded for outstanding innovation, game mechanics physics, and community project publication.',
+        theme: 'gold',
+        created_at: now - 86400000 * 4
+      },
+      {
+        id: 'cert_sample_2',
+        student_id: 'user_maya',
+        student_name: 'Maya Nour',
+        teacher_id: 'teacher_2',
+        teacher_name: 'Ms. Layla (Mathematics)',
+        title: 'Mastery Award in Mental Arithmetic & Applied Algebra',
+        title_ar: 'شهادة تفوق وإتقان في الحساب الذهني والجبر التطبيقي',
+        subject: 'Mathematics',
+        distinction: 'Excellence (ممتاز)',
+        issue_date: 'September 2026',
+        notes: 'Recognized for achieving top scores in diagnostic mathematics assessments and rapid problem solving.',
+        theme: 'emerald',
+        created_at: now - 86400000 * 2
+      }
+    ];
+
+    for (const c of sampleCerts) {
+      db.run(
+        `INSERT INTO certificates (id, student_id, student_name, teacher_id, teacher_name, title, title_ar, subject, distinction, issue_date, notes, theme, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          c.id,
+          c.student_id,
+          c.student_name,
+          c.teacher_id,
+          c.teacher_name,
+          c.title,
+          c.title_ar,
+          c.subject,
+          c.distinction,
+          c.issue_date,
+          c.notes,
+          c.theme,
+          c.created_at
         ]
       );
     }

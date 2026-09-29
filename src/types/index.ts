@@ -58,7 +58,7 @@ export interface NotificationItem {
   message: string;
   messageAr?: string;
   timestamp: string;
-  type: 'meeting' | 'group' | 'test' | 'career' | 'general';
+  type: 'meeting' | 'group' | 'test' | 'career' | 'general' | 'certificate';
   meetingId?: string;
   read: boolean;
 }
@@ -159,3 +159,18 @@ export interface ProgramItem {
   featuresAr: string[];
 }
 
+export interface CertificateItem {
+  id: string;
+  studentId: string;
+  studentName: string;
+  teacherId: string;
+  teacherName: string;
+  title: string;
+  titleAr?: string;
+  subject: string;
+  distinction: string;
+  issueDate: string;
+  notes?: string;
+  theme?: 'gold' | 'emerald' | 'purple' | 'amber' | 'blue';
+  createdAt: number;
+}

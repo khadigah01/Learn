@@ -393,7 +393,138 @@ async function startServer() {
   });
 
   // ==========================================
-  // 3. Vite middleware vs static
+  // 3. CERTIFICATES ENDPOINTS (SQLite)
+  // Teachers and Admins can award certificates to students!
+  // ==========================================
+
+  // List certificates
+  app.get('/api/certificates', (req, res) => {
+    try {
+      const studentId = req.query.studentId as string;
+      let query = 'SELECT * FROM certificates ORDER BY created_at DESC';
+      let params: any[] = [];
+
+      if (studentId) {
+        query = 'SELECT * FROM certificates WHERE student_id = ? ORDER BY created_at DESC';
+        params = [studentId];
+      }
+
+      const stmt = sqlite.prepare(query);
+      if (params.length > 0) stmt.bind(params);
+
+      const certificates: any[] = [];
+      while (stmt.step()) {
+        const row = stmt.getAsObject() as any;
+        certificates.push({
+          id: row.id,
+          studentId: row.student_id,
+          studentName: row.student_name,
+          teacherId: row.teacher_id,
+          teacherName: row.teacher_name,
+          title: row.title,
+          titleAr: row.title_ar,
+          subject: row.subject,
+          distinction: row.distinction,
+          issueDate: row.issue_date,
+          notes: row.notes,
+          theme: row.theme || 'gold',
+          createdAt: row.created_at
+        });
+      }
+      stmt.free();
+
+      res.json({ success: true, certificates });
+    } catch (err: any) {
+      console.error('[API Certificates] Error listing certificates:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // Issue / Award a Certificate
+  app.post('/api/certificates', (req, res) => {
+    try {
+      const {
+        studentId,
+        studentName,
+        teacherId,
+        teacherName,
+        title,
+        titleAr = '',
+        subject = 'General',
+        distinction = 'With Distinction',
+        issueDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        notes = '',
+        theme = 'gold'
+      } = req.body;
+
+      if (!studentId || !studentName || !title) {
+        return res.status(400).json({ success: false, error: 'studentId, studentName, and title are required' });
+      }
+
+      const id = 'cert_' + Date.now() + Math.random().toString(36).substring(2, 6);
+      const now = Date.now();
+
+      sqlite.run(
+        `INSERT INTO certificates (id, student_id, student_name, teacher_id, teacher_name, title, title_ar, subject, distinction, issue_date, notes, theme, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          studentId,
+          studentName.trim(),
+          teacherId || 'teacher_admin',
+          teacherName || 'Instructor',
+          title.trim(),
+          titleAr.trim(),
+          subject.trim(),
+          distinction.trim(),
+          issueDate.trim(),
+          notes.trim(),
+          theme,
+          now
+        ]
+      );
+
+      persistSqliteDb();
+
+      res.status(201).json({
+        success: true,
+        certificate: {
+          id,
+          studentId,
+          studentName,
+          teacherId,
+          teacherName,
+          title,
+          titleAr,
+          subject,
+          distinction,
+          issueDate,
+          notes,
+          theme,
+          createdAt: now
+        }
+      });
+    } catch (err: any) {
+      console.error('[API Certificates] Error issuing certificate:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // Delete certificate
+  app.delete('/api/certificates/:id', (req, res) => {
+    try {
+      const { id } = req.params;
+      sqlite.run('DELETE FROM certificates WHERE id = ?', [id]);
+      persistSqliteDb();
+      res.json({ success: true, deletedId: id });
+    } catch (err: any) {
+      console.error('[API Certificates] Error deleting certificate:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ==========================================
+  // 4. Vite middleware vs static
   // ==========================================
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

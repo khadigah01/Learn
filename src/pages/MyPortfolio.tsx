@@ -34,6 +34,7 @@ import {
   Zap
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { CertificateManager } from '../components/CertificateManager';
 
 interface PortfolioProject {
   id: string;
@@ -637,6 +638,9 @@ Verified at: LearnAcademy.dpdns.org`;
           </div>
         </div>
       </div>
+
+      {/* Official Academic Certificates & Honors (SQLite) */}
+      <CertificateManager filterStudentId={currentUser?.id} />
 
       {/* Classroom Schedule & Live Sessions */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl space-y-4">
