@@ -180,6 +180,17 @@ export const Navbar: React.FC = () => {
     // 2. Interactive & Live Classrooms
     {
       category: 'interactive',
+      titleEn: 'Global Leaderboard & Hall of Fame (/leaderboard)',
+      titleAr: 'لوحة المتصدرين والأبطال (/leaderboard)',
+      descEn: 'Real-time student rankings based on earned badges, quizzes, and Scratch projects',
+      descAr: 'ترتيب الطلاب الشامل بناءً على الشارات والاختبارات ومشاريع سكراتش',
+      route: '/leaderboard',
+      icon: Trophy,
+      badge: 'Champions',
+      action: () => handleNav('/leaderboard')
+    },
+    {
+      category: 'interactive',
       titleEn: 'Coding Studio (Scratch & TurboWarp)',
       titleAr: 'استوديو البرمجة (سكراتش وتيربو وورب)',
       descEn: 'Build games with Scratch MIT & TurboWarp, export & test .sb3 files',
@@ -597,6 +608,18 @@ export const Navbar: React.FC = () => {
           >
             <FolderPlus className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
             <span>{language === 'ar' ? 'ملفي' : 'Portfolio'}</span>
+          </button>
+
+          <button
+            onClick={() => handleNav('/leaderboard')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn whitespace-nowrap ${
+              currentPath === '/leaderboard'
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'text-amber-200 hover:bg-amber-400/20 hover:text-white'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+            <span>{language === 'ar' ? 'المتصدرين' : 'Ranks'}</span>
           </button>
 
           <button

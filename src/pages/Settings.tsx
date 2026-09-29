@@ -22,7 +22,8 @@ import {
   Power,
   Lock,
   LogIn,
-  LayoutDashboard
+  LayoutDashboard,
+  Cookie
 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
@@ -645,7 +646,45 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* 8. Danger & Reset Zone */}
+        {/* 8. Cookie & Privacy Settings */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md space-y-6 glow-card">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200">
+                <Cookie className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-slate-900">
+                  {language === 'ar' ? 'ملفات تعريف الارتباط والخصوصية' : 'Cookie & Privacy Preferences'}
+                </h2>
+                <p className="text-xs text-slate-500">
+                  {language === 'ar'
+                    ? 'إدارة وحفظ موافقة ملفات تعريف الارتباط والذاكرة المؤقتة'
+                    : 'Manage cookie consent, diagnostic tracking, and local preference storage'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                localStorage.removeItem('learn_cookie_consent');
+                window.location.reload();
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow transition-all cursor-pointer glow-btn flex items-center gap-1.5"
+            >
+              <Cookie className="w-4 h-4" />
+              <span>{language === 'ar' ? 'إعادة ضبط خيارات الكوكيز' : 'Reopen Cookie Banner'}</span>
+            </button>
+          </div>
+
+          <p className="text-xs text-slate-600 leading-relaxed">
+            {language === 'ar'
+              ? 'تستخدم المنصة ملفات تعريف الارتباط لتخزين تقدم الطالب في سكراتش، ونتائج الاختبارات التشخيصية، وتفضيلات الصوت، والحفاظ على أمان الجلسة وفقاً للمعايير العالمية.'
+              : 'Our academy platform uses secure local storage and cookies to retain student diagnostic achievements, Scratch sandbox state, game audio settings, and secure session management.'}
+          </p>
+        </div>
+
+        {/* 9. Danger & Reset Zone */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-md space-y-6 glow-card">
           <div className="flex items-center gap-3 border-b border-rose-50 pb-4">
             <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">

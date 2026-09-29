@@ -22,6 +22,8 @@ import { BadgesGuide } from './pages/BadgesGuide';
 import { Payments } from './pages/Payments';
 import { CodingStudio } from './pages/CodingStudio';
 import { Play } from './pages/Play';
+import { Leaderboard } from './pages/Leaderboard';
+import { CookieConsent } from './components/CookieConsent';
 import { translations } from './utils/translations';
 import { GraduationCap, ExternalLink, Sparkles, LogIn } from 'lucide-react';
 
@@ -130,6 +132,9 @@ const AppContent: React.FC = () => {
     }
     if (path === '/payments') {
       return <Payments />;
+    }
+    if (path === '/leaderboard') {
+      return <Leaderboard />;
     }
 
     // 5. Authenticated-only Routes (Dashboard, Notifications)
@@ -327,6 +332,9 @@ const AppContent: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Global Cookie & Privacy Consent Banner */}
+      <CookieConsent />
 
     </div>
   );
