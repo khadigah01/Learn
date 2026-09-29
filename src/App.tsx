@@ -20,6 +20,8 @@ import { Settings } from './pages/Settings';
 import { Help } from './pages/Help';
 import { BadgesGuide } from './pages/BadgesGuide';
 import { Payments } from './pages/Payments';
+import { CodingStudio } from './pages/CodingStudio';
+import { Play } from './pages/Play';
 import { translations } from './utils/translations';
 import { GraduationCap, ExternalLink, Sparkles, LogIn } from 'lucide-react';
 
@@ -110,6 +112,12 @@ const AppContent: React.FC = () => {
     }
     if (path === '/my-portfolio') {
       return <MyPortfolio />;
+    }
+    if (path === '/coding-studio' || path === '/studio') {
+      return <CodingStudio />;
+    }
+    if (path === '/play') {
+      return <Play />;
     }
     if (path === '/settings') {
       return <Settings />;

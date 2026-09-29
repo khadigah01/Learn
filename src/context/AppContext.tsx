@@ -45,6 +45,7 @@ interface AppContextType {
   
   // Account & User Actions
   registerOrLoginUser: (user: User) => Promise<User>;
+  createUserAccount: (user: User) => Promise<User>;
   updateUser: (userId: string, updates: Partial<User>) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
 
@@ -504,6 +505,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Register new user without logging into the new account (for Admin creation)
+  const createUserAccount = async (userData: User): Promise<User> => {
+    const userRef = doc(db, 'users', userData.id);
+    const sanitizedUser: User = {
+      ...userData,
+      groupName: userData.groupName || '',
+      email: userData.email || '',
+      password: userData.password || '123456',
+      scoreMath: userData.scoreMath ?? 0,
+      scoreArabic: userData.scoreArabic ?? 0,
+      scoreEnglish: userData.scoreEnglish ?? 0,
+      levelMath: userData.levelMath || 'Beginner',
+      levelArabic: userData.levelArabic || 'Beginner',
+      levelEnglish: userData.levelEnglish || 'Beginner'
+    };
+
+    try {
+      await setDoc(userRef, cleanFirestoreData(sanitizedUser), { merge: true });
+      // CRITICAL: DO NOT call setCurrentUser here! Admin stays logged in as admin!
+      return sanitizedUser;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `users/${userData.id}`);
+      throw error;
+    }
+  };
+
   // Create meeting & notify assigned students via Firestore
   const createMeeting = async (newMeetingData: Omit<LiveMeeting, 'id' | 'status'>): Promise<string> => {
     const meetingId = 'meet_' + Date.now() + Math.random().toString(36).substring(2, 6);
@@ -867,6 +894,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         scratchAvailable,
         toggleScratchAvailability,
         registerOrLoginUser,
+        createUserAccount,
         updateUser,
         deleteUser,
         createMeeting,

@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { TeacherQuizManager } from '../components/TeacherQuizManager';
+import { QuizPlayerModal } from '../components/QuizPlayerModal';
 
 export const Dashboard: React.FC = () => {
   const {
@@ -55,6 +57,7 @@ export const Dashboard: React.FC = () => {
     deleteGroup,
     assignStudentToGroup,
     registerOrLoginUser,
+    createUserAccount,
     updateUser,
     deleteUser,
     updateCareerAppStatus,
@@ -80,9 +83,10 @@ export const Dashboard: React.FC = () => {
   const isCoordinator = currentUser?.role === 'coordinator';
   const isStudent = currentUser?.role === 'student';
 
-  const [activeTab, setActiveTab] = useState<'meetings' | 'groups' | 'students' | 'users' | 'programs' | 'inquiries' | 'careers'>(
+  const [activeTab, setActiveTab] = useState<'meetings' | 'groups' | 'students' | 'users' | 'programs' | 'inquiries' | 'careers' | 'quizzes'>(
     'meetings'
   );
+  const [takingQuiz, setTakingQuiz] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   // HTML Delete Confirmation Modal State
@@ -306,7 +310,8 @@ export const Dashboard: React.FC = () => {
       levelEnglish: 'Beginner'
     };
 
-    await registerOrLoginUser(newUser);
+    // Use createUserAccount so Admin remains logged in
+    await createUserAccount(newUser);
 
     // If assigned to a group, update group document
     if (newUserGroup.trim()) {
@@ -725,6 +730,9 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* TEACHER ASSIGNED QUIZZES & TESTS (SQLite) */}
+          <TeacherQuizManager onTakeQuiz={(quiz) => setTakingQuiz(quiz)} />
+
         </div>
       )}
 
@@ -766,6 +774,17 @@ export const Dashboard: React.FC = () => {
                 }`}
               >
                 {t.allStudents} ({allStudentsList.length})
+              </button>
+
+              <button
+                onClick={() => setActiveTab('quizzes')}
+                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all glow-btn ${
+                  activeTab === 'quizzes'
+                    ? 'bg-amber-400 text-slate-950 shadow'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                {language === 'ar' ? 'الاختبارات والتقييمات (SQLite)' : 'Quizzes & Tests (SQLite)'}
               </button>
 
               {isAdmin && (
@@ -1496,6 +1515,11 @@ export const Dashboard: React.FC = () => {
                 </div>
               )}
             </div>
+          )}
+
+          {/* QUIZZES & TESTS TAB (SQLite) */}
+          {activeTab === 'quizzes' && (
+            <TeacherQuizManager onTakeQuiz={(quiz) => setTakingQuiz(quiz)} />
           )}
 
         </div>
@@ -2431,6 +2455,11 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ACTIVE QUIZ PLAYER MODAL */}
+      {takingQuiz && (
+        <QuizPlayerModal quiz={takingQuiz} onClose={() => setTakingQuiz(null)} />
       )}
 
     </div>

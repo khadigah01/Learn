@@ -28,7 +28,9 @@ import {
   FileText,
   Settings,
   Trophy,
-  CreditCard
+  CreditCard,
+  Code,
+  FolderPlus
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -176,6 +178,39 @@ export const Navbar: React.FC = () => {
     },
 
     // 2. Interactive & Live Classrooms
+    {
+      category: 'interactive',
+      titleEn: 'Coding Studio (Scratch & TurboWarp)',
+      titleAr: 'استوديو البرمجة (سكراتش وتيربو وورب)',
+      descEn: 'Build games with Scratch MIT & TurboWarp, export & test .sb3 files',
+      descAr: 'برمجة الألعاب باستخدام سكراتش وتيربو وورب ورفع ملفات .sb3',
+      route: '/coding-studio',
+      icon: Code,
+      badge: '60 FPS',
+      action: () => handleNav('/coding-studio')
+    },
+    {
+      category: 'interactive',
+      titleEn: 'Game Arcade (/play)',
+      titleAr: 'صالة الألعاب وسكراتش (/play)',
+      descEn: 'Play student projects & featured games powered by TurboWarp runner',
+      descAr: 'تشغيل ألعاب الطلاب ومشاريع سكراتش عبر مشغل تيربو وورب السريع',
+      route: '/play',
+      icon: Gamepad2,
+      badge: 'Arcade',
+      action: () => handleNav('/play')
+    },
+    {
+      category: 'interactive',
+      titleEn: 'My Academic Portfolio (/my-portfolio)',
+      titleAr: 'ملفي الأكاديمي ومشاريعي (/my-portfolio)',
+      descEn: 'Upload .sb3 Scratch projects, track diagnostic scores, and view schedule',
+      descAr: 'رفع مشاريع سكراتش .sb3 وحفظها في SQLite مع متابعة التقييمات',
+      route: '/my-portfolio',
+      icon: FolderPlus,
+      badge: 'Portfolio',
+      action: () => handleNav('/my-portfolio')
+    },
     {
       category: 'interactive',
       titleEn: 'Educational Games',
@@ -526,6 +561,42 @@ export const Navbar: React.FC = () => {
             }`}
           >
             {t.home}
+          </button>
+
+          <button
+            onClick={() => handleNav('/coding-studio')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn whitespace-nowrap ${
+              currentPath === '/coding-studio' || currentPath === '/studio'
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'text-amber-200 hover:bg-amber-400/20 hover:text-white'
+            }`}
+          >
+            <Code className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+            <span>{language === 'ar' ? 'الاستوديو' : 'Studio'}</span>
+          </button>
+
+          <button
+            onClick={() => handleNav('/play')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn whitespace-nowrap ${
+              currentPath === '/play'
+                ? 'bg-emerald-400 text-slate-950 shadow'
+                : 'text-emerald-200 hover:bg-emerald-500/20 hover:text-white'
+            }`}
+          >
+            <Gamepad2 className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+            <span>{language === 'ar' ? 'الألعاب' : 'Play'}</span>
+          </button>
+
+          <button
+            onClick={() => handleNav('/my-portfolio')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all glow-btn whitespace-nowrap ${
+              currentPath === '/my-portfolio'
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'text-indigo-200 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <FolderPlus className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+            <span>{language === 'ar' ? 'ملفي' : 'Portfolio'}</span>
           </button>
 
           <button
